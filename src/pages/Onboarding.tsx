@@ -27,6 +27,16 @@ type Screen = "intro" | number | "review" | "done";
 const PER_FILE_MAX = 3 * 1024 * 1024;
 const ATTACH_BUDGET = 3 * 1024 * 1024;
 
+/** "Me Jacques Derieux" → "Maître Derieux" ; sinon le nom tel quel. */
+function salutation(name: string): string {
+  const m = name.match(/^M(?:e|aître)\.?\s+(.+)$/i);
+  if (m) {
+    const parts = m[1].trim().split(/\s+/).filter(Boolean);
+    return "Maître " + parts[parts.length - 1];
+  }
+  return name;
+}
+
 export default function Onboarding() {
   const { slug = "client" } = useParams();
   const [params] = useSearchParams();
@@ -245,7 +255,7 @@ function Intro({
     <div className="mx-auto flex min-h-[calc(100dvh-3.5rem)] max-w-2xl flex-col justify-center px-6 py-10 sm:px-8">
       <p className="rw-eyebrow text-rw-orange">Questionnaire de cadrage</p>
       <h1 className="mt-4 text-[clamp(2.1rem,6vw,3.9rem)] leading-[0.94]">
-        Donnons à votre cabinet une présence à la&nbsp;<span className="text-rw-orange">hauteur</span>.
+        <span className="text-rw-orange">{salutation(client.name)}</span>, faisons connaissance.
       </h1>
       <p className="mt-5 max-w-xl text-[16px] leading-relaxed text-rw-muted">
         Avant de dessiner la moindre piste, on prend le temps de vous comprendre. Répondez librement — ce qui est marqué
