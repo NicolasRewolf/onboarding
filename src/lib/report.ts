@@ -12,7 +12,12 @@ export interface SubmissionPayload {
 }
 
 /** Rapport Markdown lisible — le livrable que tu ouvres sur GitHub pour ton devis. */
-export function buildMarkdownReport(client: ClientInfo, answers: Answers, submittedAt: string): string {
+export function buildMarkdownReport(
+  client: ClientInfo,
+  answers: Answers,
+  submittedAt: string,
+  skippedAttachments: string[] = [],
+): string {
   const answered = answeredCount(answers);
   const missing = missingEssentials(answers);
   const L: string[] = [];
@@ -30,6 +35,13 @@ export function buildMarkdownReport(client: ClientInfo, answers: Answers, submit
 
   if (missing.length) {
     L.push(`> ⚠️ Réponses essentielles non renseignées : ${missing.map((q) => `#${q.n}`).join(", ")}`);
+    L.push("");
+  }
+
+  if (skippedAttachments.length) {
+    L.push(
+      `> 📎 Pièce(s) jointe(s) non transmise(s) automatiquement (trop volumineuse(s), à demander au client par email) : ${skippedAttachments.join(", ")}`,
+    );
     L.push("");
   }
 
@@ -55,12 +67,17 @@ export function buildMarkdownReport(client: ClientInfo, answers: Answers, submit
   return L.join("\n");
 }
 
-export function buildPayload(client: ClientInfo, answers: Answers, submittedAt: string): SubmissionPayload {
+export function buildPayload(
+  client: ClientInfo,
+  answers: Answers,
+  submittedAt: string,
+  skippedAttachments: string[] = [],
+): SubmissionPayload {
   return {
     slug: client.slug,
     client,
     answers,
-    reportMarkdown: buildMarkdownReport(client, answers, submittedAt),
+    reportMarkdown: buildMarkdownReport(client, answers, submittedAt, skippedAttachments),
     stats: {
       answered: answeredCount(answers),
       total: TOTAL_Q,

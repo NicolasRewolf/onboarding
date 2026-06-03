@@ -55,6 +55,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (!reportMarkdown || !client?.name) return res.status(400).json({ error: "Charge utile invalide." });
 
+    // Garde-fou : la limite de corps des fonctions Vercel est ~4,5 Mo.
+    const attachBytes = attachments.reduce((n, a) => n + (typeof a?.b64 === "string" ? a.b64.length : 0), 0);
+    if (attachBytes > 4_200_000) {
+      return res.status(413).json({ error: "Pièces jointes trop volumineuses — réessayez sans les fichiers les plus lourds." });
+    }
+
     const slug = safeSlug(body?.slug || client?.slug);
     const api = gh(token);
     const [owner, repo] = REPO.split("/");
@@ -73,35 +79,63 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return !sha; // true => fichier nouvellement créé
     }
 
-    const stamp = (submittedAt || new Date().toISOString()).toString();
-    const isNew = await putFile(`${dir}/report.md`, b64utf8(reportMarkdown), `Cadrage ${slug} — ${stamp}`);
-    await putFile(
-      `${dir}/data.json`,
-      b64utf8(JSON.stringify({ client, answers, stats, submittedAt: stamp }, null, 2)),
-      `Cadrage ${slug} (data) — ${stamp}`,
-    );
+    // Récupère le JSON existant (pour réutiliser le n° d'issue d'une soumission précédente).
+    async function getExisting(path: string): Promise<Record<string, unknown> | null> {
+      const r = await api(`/repos/${REPO}/contents/${encodeURIComponent(path)}?ref=${BRANCH}`);
+      if (!r.ok) return null;
+      try {
+        const j = (await r.json()) as { content?: string };
+        return JSON.parse(Buffer.from(j.content || "", "base64").toString("utf-8"));
+      } catch {
+        return null;
+      }
+    }
 
-    // Pièces jointes (déjà encodées base64 côté client)
+    const stamp = (submittedAt || new Date().toISOString()).toString();
+    const prior = await getExisting(`${dir}/data.json`);
+    const priorIssue = typeof prior?.issueNumber === "number" ? (prior.issueNumber as number) : undefined;
+
+    // 1) Rapport + pièces jointes
+    await putFile(`${dir}/report.md`, b64utf8(reportMarkdown), `Cadrage ${slug} — ${stamp}`);
     for (const att of attachments.slice(0, 20)) {
       if (!att?.b64) continue;
       await putFile(`${dir}/attachments/${safeName(att.name)}`, att.b64, `Pièce jointe ${slug} — ${safeName(att.name)}`);
     }
 
-    // Notification : une issue à la première soumission
-    if (isNew) {
-      await api(`/repos/${REPO}/issues`, {
-        method: "POST",
-        body: JSON.stringify({
-          title: `Cadrage — ${client.name}`,
-          body: `${reportMarkdown}\n\n— [Voir le dossier](../tree/${BRANCH}/${dir})`,
-        }),
-      }).catch(() => undefined); // l'issue est un bonus : ne bloque pas l'envoi
+    // 2) Notification : commente l'issue existante, sinon en crée une (non bloquant).
+    const repoUrl = `https://github.com/${owner}/${repo}`;
+    const reportUrl = `${repoUrl}/blob/${BRANCH}/${dir}/report.md`;
+    let issueNumber = priorIssue;
+    try {
+      if (issueNumber) {
+        await api(`/repos/${REPO}/issues/${issueNumber}/comments`, {
+          method: "POST",
+          body: JSON.stringify({
+            body: `🔁 Nouvelle soumission — ${stats?.answered ?? "?"}/${stats?.total ?? "?"} réponses (${stamp}). [Voir le rapport](${reportUrl})`,
+          }),
+        });
+      } else {
+        const r = await api(`/repos/${REPO}/issues`, {
+          method: "POST",
+          body: JSON.stringify({
+            title: `Cadrage — ${client.name}`,
+            body: `${reportMarkdown}\n\n— [Dossier](${repoUrl}/tree/${BRANCH}/${dir})`,
+          }),
+        });
+        if (r.ok) issueNumber = ((await r.json()) as { number?: number }).number;
+      }
+    } catch {
+      /* la notif est un bonus : on n'échoue pas l'envoi pour autant */
     }
 
-    return res.status(200).json({
-      ok: true,
-      url: `https://github.com/${owner}/${repo}/blob/${BRANCH}/${dir}/report.md`,
-    });
+    // 3) Données structurées (avec le n° d'issue pour lier les prochaines soumissions)
+    await putFile(
+      `${dir}/data.json`,
+      b64utf8(JSON.stringify({ client, answers, stats, submittedAt: stamp, issueNumber: issueNumber ?? null }, null, 2)),
+      `Cadrage ${slug} (data) — ${stamp}`,
+    );
+
+    return res.status(200).json({ ok: true, url: reportUrl });
   } catch (e) {
     return res.status(500).json({ error: e instanceof Error ? e.message : "Erreur serveur" });
   }

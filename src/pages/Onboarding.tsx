@@ -22,7 +22,10 @@ import { fileToBase64, submitOnboarding, type Attachment } from "@/lib/submit";
 import { cn } from "@/lib/utils";
 
 type Screen = "intro" | number | "review" | "done";
-const MAX_FILE = 6 * 1024 * 1024;
+// Limite du corps des fonctions Vercel = 4,5 Mo. On garde une marge confortable :
+// 3 Mo/fichier, ~3 Mo cumulés (≈ 4 Mo une fois encodé base64). Au-delà → on note "à envoyer par email".
+const PER_FILE_MAX = 3 * 1024 * 1024;
+const ATTACH_BUDGET = 3 * 1024 * 1024;
 
 export default function Onboarding() {
   const { slug = "client" } = useParams();
@@ -92,12 +95,19 @@ export default function Onboarding() {
     setError(null);
     try {
       const attachments: Attachment[] = [];
+      const skipped: string[] = [];
+      let budget = ATTACH_BUDGET;
       for (const [qid, list] of Object.entries(files)) {
         for (const f of list) {
-          if (f.size <= MAX_FILE) attachments.push({ qid, name: f.name, b64: await fileToBase64(f) });
+          if (f.size > PER_FILE_MAX || f.size > budget) {
+            skipped.push(f.name);
+            continue;
+          }
+          attachments.push({ qid, name: f.name, b64: await fileToBase64(f) });
+          budget -= f.size;
         }
       }
-      const payload = buildPayload(client, answers, new Date().toLocaleString("fr-FR"));
+      const payload = buildPayload(client, answers, new Date().toLocaleString("fr-FR"), skipped);
       const res = await submitOnboarding(payload, attachments);
       if (!res.ok) throw new Error(res.error || "Échec de l'envoi");
       clearDraft(client.slug);
