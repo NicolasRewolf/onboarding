@@ -13,6 +13,9 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 const REPO = process.env.RESPONSES_REPO || "NicolasRewolf/onboarding-responses";
 const BRANCH = process.env.RESPONSES_BRANCH || "main";
 const API = "https://api.github.com";
+// Handle GitHub à notifier (mention + assignation). Reçoit un vrai push « Direct Mention »
+// uniquement si l'issue est créée par un AUTRE compte que celui-ci (cf. compte bot).
+const NOTIFY = process.env.NOTIFY_GITHUB_HANDLE || "NicolasRewolf";
 
 interface Attachment {
   name: string;
@@ -111,7 +114,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         await api(`/repos/${REPO}/issues/${issueNumber}/comments`, {
           method: "POST",
           body: JSON.stringify({
-            body: `🔁 Nouvelle soumission — ${stats?.answered ?? "?"}/${stats?.total ?? "?"} réponses (${stamp}). [Voir le rapport](${reportUrl})`,
+            body: `@${NOTIFY} 🔁 Nouvelle soumission de **${client.name}** — ${stats?.answered ?? "?"}/${stats?.total ?? "?"} réponses (${stamp}). [Voir le rapport](${reportUrl})`,
           }),
         });
       } else {
@@ -119,7 +122,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           method: "POST",
           body: JSON.stringify({
             title: `Cadrage — ${client.name}`,
-            body: `${reportMarkdown}\n\n— [Dossier](${repoUrl}/tree/${BRANCH}/${dir})`,
+            assignees: [NOTIFY],
+            body: `@${NOTIFY} — nouveau cadrage de **${client.name}** (${stats?.answered ?? "?"}/${stats?.total ?? "?"} réponses).\n\n${reportMarkdown}\n\n— [Dossier](${repoUrl}/tree/${BRANCH}/${dir})`,
           }),
         });
         if (r.ok) issueNumber = ((await r.json()) as { number?: number }).number;
