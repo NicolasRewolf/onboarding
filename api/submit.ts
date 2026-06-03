@@ -1,6 +1,10 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { z } from "zod";
-import { MAX_BODY_B64 } from "../src/lib/attachmentLimits";
+
+// Garde-fou de taille du corps (~marge sous la limite Vercel 4,5 Mo).
+// Doit rester cohérent avec src/lib/attachmentLimits.ts (la fonction serverless
+// ne peut pas importer fiablement du code hors de /api).
+const MAX_BODY_B64 = 4_200_000;
 
 /**
  * Reçoit un cadrage et l'écrit dans le dépôt privé GitHub des réponses.
