@@ -1,12 +1,16 @@
+import { type ReactNode } from "react";
 import { Check, Paperclip, Upload, X } from "lucide-react";
-import { type Question } from "@/lib/questionnaire";
+import { type Question, type QType } from "@/lib/questionnaire";
 import { type Answers } from "@/lib/answers";
+import { YES, NO, aux } from "@/lib/fieldTypes";
 import { cn } from "@/lib/utils";
 
 const INPUT =
   "w-full border-2 border-rw-black bg-white px-4 py-3 text-[15px] leading-relaxed placeholder:text-rw-tertiary focus:outline-none focus-visible:outline-none focus:border-rw-orange focus:ring-2 focus:ring-rw-orange/30";
 
-interface FieldProps {
+const sv = (v: unknown): string => (typeof v === "string" ? v : "");
+
+export interface RendererProps {
   q: Question;
   answers: Answers;
   files: File[];
@@ -14,213 +18,218 @@ interface FieldProps {
   addFiles: (qid: string, list: FileList | null) => void;
   removeFile: (qid: string, idx: number) => void;
 }
+type Renderer = (p: RendererProps) => ReactNode;
 
-export function Field({ q, answers, files, set, addFiles, removeFile }: FieldProps) {
-  const v = answers[q.id];
-  const str = typeof v === "string" ? v : "";
-  const arr = Array.isArray(v) ? v : [];
+/* ── Renderers par type ── */
 
+const TextField: Renderer = ({ q, answers, set }) => (
+  <input className={INPUT} value={sv(answers[q.id])} placeholder={q.ph} onChange={(e) => set(q.id, e.target.value)} />
+);
+
+const TextareaField: Renderer = ({ q, answers, set }) => (
+  <>
+    <textarea
+      className={cn(INPUT, "min-h-[112px] resize-y")}
+      rows={4}
+      value={sv(answers[q.id])}
+      placeholder={q.ph}
+      onChange={(e) => set(q.id, e.target.value)}
+    />
+    {q.type === "ranked" && <Hint>↕ Du plus important au moins important — un par ligne.</Hint>}
+    {q.type === "links" && <Hint>↗ Un lien ou un nom par ligne.</Hint>}
+  </>
+);
+
+const BooleanField: Renderer = ({ q, answers, set }) => {
+  const v = sv(answers[q.id]);
   return (
-    <div className="space-y-3">
-      {/* ── Texte court ── */}
-      {q.type === "text" && (
-        <input className={INPUT} value={str} placeholder={q.ph} onChange={(e) => set(q.id, e.target.value)} />
+    <>
+      <Seg value={v} onPick={(opt) => set(q.id, v === opt ? "" : opt)} />
+      {q.type === "booleanDetail" && v === YES && (
+        <textarea
+          className={cn(INPUT, "min-h-[88px] resize-y")}
+          value={sv(answers[aux(q.id, "detail")])}
+          placeholder={q.detailPh}
+          onChange={(e) => set(aux(q.id, "detail"), e.target.value)}
+        />
       )}
+    </>
+  );
+};
 
-      {/* ── Textes longs / listes ── */}
-      {(q.type === "textarea" || q.type === "list" || q.type === "ranked" || q.type === "links") && (
-        <>
-          <textarea
-            className={cn(INPUT, "min-h-[112px] resize-y")}
-            rows={q.type === "ranked" ? 4 : 4}
-            value={str}
-            placeholder={q.ph}
-            onChange={(e) => set(q.id, e.target.value)}
+const ChoiceField: Renderer = ({ q, answers, set }) => {
+  const v = sv(answers[q.id]);
+  return (
+    <>
+      <div className="flex flex-wrap gap-2.5">
+        {q.options?.map((opt) => (
+          <Chip key={opt} on={v === opt} accent onClick={() => set(q.id, v === opt ? "" : opt)}>
+            {opt}
+          </Chip>
+        ))}
+      </div>
+      {q.precision && (
+        <input
+          className={INPUT}
+          placeholder={q.precision}
+          value={sv(answers[aux(q.id, "precision")])}
+          onChange={(e) => set(aux(q.id, "precision"), e.target.value)}
+        />
+      )}
+    </>
+  );
+};
+
+const MultiField: Renderer = ({ q, answers, set }) => {
+  const arr = Array.isArray(answers[q.id]) ? (answers[q.id] as string[]) : [];
+  return (
+    <>
+      <div className="flex flex-wrap gap-2.5">
+        {q.options?.map((opt) => {
+          const on = arr.includes(opt);
+          return (
+            <Chip key={opt} on={on} onClick={() => set(q.id, on ? arr.filter((x) => x !== opt) : [...arr, opt])}>
+              {opt}
+            </Chip>
+          );
+        })}
+      </div>
+      {q.allowOther && (
+        <input
+          className={INPUT}
+          placeholder="Autre / précisions…"
+          value={sv(answers[aux(q.id, "other")])}
+          onChange={(e) => set(aux(q.id, "other"), e.target.value)}
+        />
+      )}
+    </>
+  );
+};
+
+const BudgetField: Renderer = ({ q, answers, set }) => {
+  const v = sv(answers[q.id]);
+  return (
+    <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+      {q.budgetOptions?.map(([main, sub]) => {
+        const on = v === main;
+        return (
+          <button
+            key={main}
+            type="button"
+            aria-pressed={on}
+            onClick={() => set(q.id, on ? "" : main)}
+            className={cn(
+              "border-2 border-rw-black p-4 text-left transition-all",
+              on
+                ? "bg-rw-orange text-rw-black shadow-[var(--shadow-hard-sm)]"
+                : "bg-white hover:translate-x-[1px] hover:translate-y-[1px]",
+            )}
+          >
+            <span className="block text-[15px] font-bold tracking-tight">{main}</span>
+            <span className={cn("mt-0.5 block text-xs", on ? "text-rw-black/70" : "text-rw-muted")}>{sub}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+};
+
+const LogoField: Renderer = ({ q, answers, files, set, addFiles, removeFile }) => {
+  const v = sv(answers[q.id]);
+  return (
+    <>
+      <Seg value={v} onPick={(opt) => set(q.id, v === opt ? "" : opt)} />
+      {v === YES && (
+        <div className="space-y-2">
+          <p className="font-mono text-xs text-rw-tertiary">Partagez votre logo / charte — joignez le fichier ou collez un lien.</p>
+          <input
+            className={INPUT}
+            placeholder="Lien vers votre logo / charte (optionnel)"
+            value={sv(answers[aux(q.id, "link")])}
+            onChange={(e) => set(aux(q.id, "link"), e.target.value)}
           />
-          {q.type === "ranked" && <Hint>↕ Du plus important au moins important — un par ligne.</Hint>}
-          {q.type === "links" && <Hint>↗ Un lien ou un nom par ligne.</Hint>}
-        </>
-      )}
-
-      {/* ── Oui / Non (+ détail) ── */}
-      {(q.type === "boolean" || q.type === "booleanDetail") && (
-        <>
-          <div className="inline-flex border-2 border-rw-black">
-            {["Oui", "Non"].map((opt, i) => {
-              const on = str === opt;
-              return (
-                <button
-                  key={opt}
-                  type="button"
-                  aria-pressed={on}
-                  onClick={() => set(q.id, on ? "" : opt)}
-                  className={cn(
-                    "px-7 py-2.5 text-sm font-bold uppercase tracking-tight transition-colors",
-                    i === 0 && "border-r-2 border-rw-black",
-                    on ? "bg-rw-orange text-rw-black" : "bg-white text-rw-muted hover:bg-rw-paper-subtle",
-                  )}
-                >
-                  {opt}
-                </button>
-              );
-            })}
-          </div>
-          {q.type === "booleanDetail" && str === "Oui" && (
-            <textarea
-              className={cn(INPUT, "min-h-[88px] resize-y")}
-              value={typeof answers[q.id + "_detail"] === "string" ? (answers[q.id + "_detail"] as string) : ""}
-              placeholder={q.detailPh}
-              onChange={(e) => set(q.id + "_detail", e.target.value)}
-            />
-          )}
-        </>
-      )}
-
-      {/* ── Choix unique ── */}
-      {q.type === "choice" && q.options && (
-        <>
-          <div className="flex flex-wrap gap-2.5">
-            {q.options.map((opt) => {
-              const on = str === opt;
-              return (
-                <Chip key={opt} on={on} accent onClick={() => set(q.id, on ? "" : opt)}>
-                  {opt}
-                </Chip>
-              );
-            })}
-          </div>
-          {q.precision && (
-            <input
-              className={INPUT}
-              placeholder={q.precision}
-              value={typeof answers[q.id + "_precision"] === "string" ? (answers[q.id + "_precision"] as string) : ""}
-              onChange={(e) => set(q.id + "_precision", e.target.value)}
-            />
-          )}
-        </>
-      )}
-
-      {/* ── Choix multiple ── */}
-      {q.type === "multi" && q.options && (
-        <>
-          <div className="flex flex-wrap gap-2.5">
-            {q.options.map((opt) => {
-              const on = arr.includes(opt);
-              return (
-                <Chip
-                  key={opt}
-                  on={on}
-                  onClick={() => set(q.id, on ? arr.filter((x) => x !== opt) : [...arr, opt])}
-                >
-                  {opt}
-                </Chip>
-              );
-            })}
-          </div>
-          {q.allowOther && (
-            <input
-              className={INPUT}
-              placeholder="Autre / précisions…"
-              value={typeof answers[q.id + "_other"] === "string" ? (answers[q.id + "_other"] as string) : ""}
-              onChange={(e) => set(q.id + "_other", e.target.value)}
-            />
-          )}
-        </>
-      )}
-
-      {/* ── Budget ── */}
-      {q.type === "budget" && q.budgetOptions && (
-        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
-          {q.budgetOptions.map(([main, sub]) => {
-            const on = str === main;
-            return (
-              <button
-                key={main}
-                type="button"
-                aria-pressed={on}
-                onClick={() => set(q.id, on ? "" : main)}
-                className={cn(
-                  "border-2 border-rw-black p-4 text-left transition-all",
-                  on
-                    ? "bg-rw-orange text-rw-black shadow-[var(--shadow-hard-sm)]"
-                    : "bg-white hover:translate-x-[1px] hover:translate-y-[1px]",
-                )}
-              >
-                <span className="block text-[15px] font-bold tracking-tight">{main}</span>
-                <span className={cn("mt-0.5 block text-xs", on ? "text-rw-black/70" : "text-rw-muted")}>{sub}</span>
-              </button>
-            );
-          })}
+          <FileZone qid={q.id} files={files} addFiles={addFiles} removeFile={removeFile} />
         </div>
       )}
-
-      {/* ── Logo / identité (branchement Oui / Non) ── */}
-      {q.type === "logo" && (
-        <>
-          <div className="inline-flex border-2 border-rw-black">
-            {["Oui", "Non"].map((opt, i) => {
-              const on = str === opt;
+      {v === NO && (
+        <div className="space-y-3 border-l-4 border-rw-orange bg-rw-orange/5 p-4">
+          <p className="text-[15px] text-rw-black">Parfait — c'est notre métier. On peut créer votre identité de A à Z.</p>
+          <div className="flex flex-wrap gap-2.5">
+            {["Oui, créez mon identité", "On en parle ensemble"].map((opt) => {
+              const on = answers[aux(q.id, "branding")] === opt;
               return (
                 <button
                   key={opt}
                   type="button"
                   aria-pressed={on}
-                  onClick={() => set(q.id, on ? "" : opt)}
+                  onClick={() => set(aux(q.id, "branding"), on ? "" : opt)}
                   className={cn(
-                    "px-7 py-2.5 text-sm font-bold uppercase tracking-tight transition-colors",
-                    i === 0 && "border-r-2 border-rw-black",
-                    on ? "bg-rw-orange text-rw-black" : "bg-white text-rw-muted hover:bg-rw-paper-subtle",
+                    "inline-flex items-center gap-2 border-2 border-rw-black px-4 py-2.5 text-sm font-medium transition-colors",
+                    on ? "bg-rw-orange text-rw-black" : "bg-white text-rw-black hover:bg-rw-paper-subtle",
                   )}
                 >
+                  {on && <Check className="size-3.5 shrink-0" />}
                   {opt}
                 </button>
               );
             })}
           </div>
-
-          {str === "Oui" && (
-            <div className="space-y-2">
-              <p className="font-mono text-xs text-rw-tertiary">Partagez votre logo / charte — joignez le fichier ou collez un lien.</p>
-              <input
-                className={INPUT}
-                placeholder="Lien vers votre logo / charte (optionnel)"
-                value={typeof answers[q.id + "_link"] === "string" ? (answers[q.id + "_link"] as string) : ""}
-                onChange={(e) => set(q.id + "_link", e.target.value)}
-              />
-              <FileZone qid={q.id} files={files} addFiles={addFiles} removeFile={removeFile} />
-            </div>
-          )}
-
-          {str === "Non" && (
-            <div className="space-y-3 border-l-4 border-rw-orange bg-rw-orange/5 p-4">
-              <p className="text-[15px] text-rw-black">Parfait — c'est notre métier. On peut créer votre identité de A à Z.</p>
-              <div className="flex flex-wrap gap-2.5">
-                {["Oui, créez mon identité", "On en parle ensemble"].map((opt) => {
-                  const on = answers[q.id + "_branding"] === opt;
-                  return (
-                    <button
-                      key={opt}
-                      type="button"
-                      aria-pressed={on}
-                      onClick={() => set(q.id + "_branding", on ? "" : opt)}
-                      className={cn(
-                        "inline-flex items-center gap-2 border-2 border-rw-black px-4 py-2.5 text-sm font-medium transition-colors",
-                        on ? "bg-rw-orange text-rw-black" : "bg-white text-rw-black hover:bg-rw-paper-subtle",
-                      )}
-                    >
-                      {on && <Check className="size-3.5 shrink-0" />}
-                      {opt}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </>
+        </div>
       )}
+    </>
+  );
+};
 
-      {/* ── Pièces jointes ── */}
-      {q.file && <FileZone qid={q.id} files={files} addFiles={addFiles} removeFile={removeFile} />}
+// Registre exhaustif : ajouter un membre à QType force une entrée ici (erreur TS sinon).
+const FIELD_RENDERER: Record<QType, Renderer> = {
+  text: TextField,
+  textarea: TextareaField,
+  list: TextareaField,
+  ranked: TextareaField,
+  links: TextareaField,
+  boolean: BooleanField,
+  booleanDetail: BooleanField,
+  choice: ChoiceField,
+  multi: MultiField,
+  budget: BudgetField,
+  logo: LogoField,
+};
+
+export function Field(props: RendererProps) {
+  const Render = FIELD_RENDERER[props.q.type];
+  return (
+    <div className="space-y-3">
+      <Render {...props} />
+      {props.q.file && (
+        <FileZone qid={props.q.id} files={props.files} addFiles={props.addFiles} removeFile={props.removeFile} />
+      )}
+    </div>
+  );
+}
+
+/* ── Primitives partagées ── */
+
+function Seg({ value, onPick }: { value: string; onPick: (opt: string) => void }) {
+  return (
+    <div className="inline-flex border-2 border-rw-black">
+      {[YES, NO].map((opt, i) => {
+        const on = value === opt;
+        return (
+          <button
+            key={opt}
+            type="button"
+            aria-pressed={on}
+            onClick={() => onPick(opt)}
+            className={cn(
+              "px-7 py-2.5 text-sm font-bold uppercase tracking-tight transition-colors",
+              i === 0 && "border-r-2 border-rw-black",
+              on ? "bg-rw-orange text-rw-black" : "bg-white text-rw-muted hover:bg-rw-paper-subtle",
+            )}
+          >
+            {opt}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -283,7 +292,7 @@ function Chip({
   on: boolean;
   accent?: boolean;
   onClick: () => void;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <button
@@ -292,11 +301,7 @@ function Chip({
       onClick={onClick}
       className={cn(
         "inline-flex items-center gap-2 border-2 border-rw-black px-4 py-2.5 text-sm font-medium transition-colors",
-        on
-          ? accent
-            ? "bg-rw-orange text-rw-black"
-            : "bg-rw-black text-rw-white"
-          : "bg-white text-rw-black hover:bg-rw-paper-subtle",
+        on ? (accent ? "bg-rw-orange text-rw-black" : "bg-rw-black text-rw-white") : "bg-white text-rw-black hover:bg-rw-paper-subtle",
       )}
     >
       {on && <Check className="size-3.5 shrink-0" />}
@@ -305,6 +310,6 @@ function Chip({
   );
 }
 
-function Hint({ children }: { children: React.ReactNode }) {
+function Hint({ children }: { children: ReactNode }) {
   return <p className="font-mono text-xs text-rw-tertiary">{children}</p>;
 }

@@ -1,144 +1,23 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { AlertTriangle, ArrowLeft, ArrowRight, Check, Download, Loader2 } from "lucide-react";
 import { Wordmark } from "@/components/brand/Wordmark";
 import { ProgressRail } from "@/components/onboarding/ProgressRail";
 import { QuestionBlock } from "@/components/onboarding/QuestionBlock";
 import { Button } from "@/components/ui/button";
-import {
-  SECTIONS,
-  TOTAL_Q,
-  answeredCount,
-  formatAnswer,
-  isAnswered,
-  missingEssentials,
-  sectionAnswered,
-  type Answers,
-} from "@/lib/answers";
-import { resolveClient } from "@/lib/clients";
-import { clearDraft, loadDraft, saveDraft } from "@/lib/storage";
-import { buildPayload } from "@/lib/report";
-import { fileToBase64, submitOnboarding, type Attachment } from "@/lib/submit";
+import { SECTIONS, TOTAL_Q, formatAnswer, isAnswered, sectionAnswered, type Answers } from "@/lib/answers";
+import { type Question } from "@/lib/questionnaire";
+import { resolveClient, type ClientInfo } from "@/lib/clients";
+import { useCadrageSession } from "@/lib/useCadrageSession";
 import { cn } from "@/lib/utils";
-
-type Screen = "intro" | number | "review" | "done";
-// Limite du corps des fonctions Vercel = 4,5 Mo. On garde une marge confortable :
-// 3 Mo/fichier, ~3 Mo cumulés (≈ 4 Mo une fois encodé base64). Au-delà → on note "à envoyer par email".
-const PER_FILE_MAX = 3 * 1024 * 1024;
-const ATTACH_BUDGET = 3 * 1024 * 1024;
-
-/** "Me Jacques Derieux" → "Maître Derieux" ; sinon le nom tel quel. */
-function salutation(name: string): string {
-  const m = name.match(/^M(?:e|aître)\.?\s+(.+)$/i);
-  if (m) {
-    const parts = m[1].trim().split(/\s+/).filter(Boolean);
-    return "Maître " + parts[parts.length - 1];
-  }
-  return name;
-}
 
 export default function Onboarding() {
   const { slug = "client" } = useParams();
   const [params] = useSearchParams();
   const client = useMemo(() => resolveClient(slug, params), [slug, params]);
-
-  const [answers, setAnswers] = useState<Answers>({});
-  const [files, setFiles] = useState<Record<string, File[]>>({});
-  const [screen, setScreen] = useState<Screen>("intro");
-  const [saved, setSaved] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const hydrated = useRef(false);
-
-  // Hydrate le brouillon
-  useEffect(() => {
-    setAnswers(loadDraft(client.slug));
-    hydrated.current = true;
-  }, [client.slug]);
-
-  // Autosave (debounce)
-  useEffect(() => {
-    if (!hydrated.current) return;
-    setSaved(false);
-    const t = setTimeout(() => {
-      saveDraft(client.slug, answers);
-      setSaved(true);
-    }, 400);
-    return () => clearTimeout(t);
-  }, [answers, client.slug]);
-
-  const goTo = (s: Screen) => {
-    setScreen(s);
-    requestAnimationFrame(() => window.scrollTo({ top: 0 }));
-  };
-
-  const set = (key: string, value: string | string[]) =>
-    setAnswers((prev) => {
-      const next = { ...prev };
-      if (value === "" || (Array.isArray(value) && value.length === 0)) delete next[key];
-      else next[key] = value;
-      return next;
-    });
-
-  const addFiles = (qid: string, list: FileList | null) => {
-    if (!list?.length) return;
-    setFiles((prev) => {
-      const next = { ...prev, [qid]: [...(prev[qid] ?? []), ...Array.from(list)] };
-      set(qid + "_files", next[qid].map((f) => f.name));
-      return next;
-    });
-  };
-  const removeFile = (qid: string, idx: number) =>
-    setFiles((prev) => {
-      const arr = [...(prev[qid] ?? [])];
-      arr.splice(idx, 1);
-      const next = { ...prev, [qid]: arr };
-      set(qid + "_files", arr.map((f) => f.name));
-      return next;
-    });
-
-  const answered = answeredCount(answers);
-  const missing = missingEssentials(answers);
-
-  async function submit() {
-    setSubmitting(true);
-    setError(null);
-    try {
-      const attachments: Attachment[] = [];
-      const skipped: string[] = [];
-      let budget = ATTACH_BUDGET;
-      for (const [qid, list] of Object.entries(files)) {
-        for (const f of list) {
-          if (f.size > PER_FILE_MAX || f.size > budget) {
-            skipped.push(f.name);
-            continue;
-          }
-          attachments.push({ qid, name: f.name, b64: await fileToBase64(f) });
-          budget -= f.size;
-        }
-      }
-      const payload = buildPayload(client, answers, new Date().toLocaleString("fr-FR"), skipped);
-      const res = await submitOnboarding(payload, attachments);
-      if (!res.ok) throw new Error(res.error || "Échec de l'envoi");
-      clearDraft(client.slug);
-      goTo("done");
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Erreur inconnue");
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  function downloadReport() {
-    const payload = buildPayload(client, answers, new Date().toLocaleString("fr-FR"));
-    const blob = new Blob([payload.reportMarkdown], { type: "text/markdown" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `cadrage-${client.slug}.md`;
-    a.click();
-  }
-
-  const inStep = typeof screen === "number";
+  const s = useCadrageSession(client);
+  const inStep = typeof s.screen === "number";
+  const step = s.screen as number;
 
   return (
     <div className="min-h-dvh bg-background text-foreground">
@@ -151,7 +30,7 @@ export default function Onboarding() {
             Cadrage projet
           </span>
         </div>
-        <SavePill saved={saved} answered={answered} />
+        <SavePill saved={s.saved} answered={s.answered} />
       </header>
 
       {/* Mobile progress */}
@@ -160,67 +39,66 @@ export default function Onboarding() {
           <div className="h-2 border-2 border-rw-black">
             <div
               className="h-full bg-rw-orange transition-[width] duration-500"
-              style={{ width: `${Math.round((answered / TOTAL_Q) * 100)}%` }}
+              style={{ width: `${Math.round((s.answered / TOTAL_Q) * 100)}%` }}
             />
           </div>
           <div className="mt-2 flex justify-between font-mono text-[11px] text-rw-muted">
-            <span>{SECTIONS[screen as number].t}</span>
-            <span className="text-rw-black">Section {(screen as number) + 1} / 9</span>
+            <span>{SECTIONS[step].t}</span>
+            <span className="text-rw-black">Section {step + 1} / 9</span>
           </div>
         </div>
       )}
 
       <div className="flex">
-        {(inStep || screen === "review") && (
-          <ProgressRail current={inStep ? (screen as number) : "review"} answers={answers} go={(i) => goTo(i)} />
+        {(inStep || s.screen === "review") && (
+          <ProgressRail current={inStep ? step : "review"} answers={s.answers} go={(i) => s.goTo(i)} />
         )}
 
         <main className="min-w-0 flex-1">
-          {screen === "intro" && <Intro client={client} hasDraft={answered > 0} onStart={() => goTo(0)} answered={answered} />}
+          {s.screen === "intro" && (
+            <Intro client={client} hasDraft={s.answered > 0} onStart={() => s.goTo(0)} answered={s.answered} />
+          )}
 
           {inStep && (
             <Step
-              index={screen as number}
-              answers={answers}
-              files={files}
-              set={set}
-              addFiles={addFiles}
-              removeFile={removeFile}
+              index={step}
+              answers={s.answers}
+              files={s.files}
+              set={s.set}
+              addFiles={s.addFiles}
+              removeFile={s.removeFile}
             />
           )}
 
-          {screen === "review" && (
+          {s.screen === "review" && (
             <Review
-              answers={answers}
-              missing={missing}
-              onEdit={(i) => goTo(i)}
-              onBack={() => goTo(SECTIONS.length - 1)}
-              onSubmit={submit}
-              onDownload={downloadReport}
-              submitting={submitting}
-              error={error}
+              answers={s.answers}
+              missing={s.missing}
+              onEdit={(i) => s.goTo(i)}
+              onBack={() => s.goTo(SECTIONS.length - 1)}
+              onSubmit={s.submit}
+              onDownload={s.downloadReport}
+              submitting={s.submitting}
+              error={s.error}
             />
           )}
 
-          {screen === "done" && <Done client={client} onDownload={downloadReport} />}
+          {s.screen === "done" && <Done client={client} onDownload={s.downloadReport} />}
         </main>
       </div>
 
       {/* Bottom nav (étapes) */}
       {inStep && (
         <div className="fixed inset-x-0 bottom-0 left-0 z-30 flex items-center justify-between gap-3 border-t-2 border-rw-black bg-white px-5 py-3 sm:px-8 lg:left-[300px]">
-          <Button variant="rwOutline" onClick={() => ((screen as number) === 0 ? goTo("intro") : goTo((screen as number) - 1))}>
+          <Button variant="rwOutline" onClick={() => (step === 0 ? s.goTo("intro") : s.goTo(step - 1))}>
             <ArrowLeft className="size-4" /> Retour
           </Button>
           <span className="hidden font-mono text-xs text-rw-muted sm:block">
-            Section <b className="text-rw-black">{(screen as number) + 1}</b> / 9 ·{" "}
-            {sectionAnswered(SECTIONS[screen as number], answers)}/{SECTIONS[screen as number].qs.length}
+            Section <b className="text-rw-black">{step + 1}</b> / 9 ·{" "}
+            {sectionAnswered(SECTIONS[step], s.answers)}/{SECTIONS[step].qs.length}
           </span>
-          <Button
-            variant="rw"
-            onClick={() => ((screen as number) === SECTIONS.length - 1 ? goTo("review") : goTo((screen as number) + 1))}
-          >
-            {(screen as number) === SECTIONS.length - 1 ? "Vérifier" : "Continuer"} <ArrowRight className="size-4" />
+          <Button variant="rw" onClick={() => (step === SECTIONS.length - 1 ? s.goTo("review") : s.goTo(step + 1))}>
+            {step === SECTIONS.length - 1 ? "Vérifier" : "Continuer"} <ArrowRight className="size-4" />
           </Button>
         </div>
       )}
@@ -228,7 +106,17 @@ export default function Onboarding() {
   );
 }
 
-/* ─────────────────────────── Sous-écrans ─────────────────────────── */
+/* ─────────────────────────── Présentation ─────────────────────────── */
+
+/** "Me Jacques Derieux" → "Maître Derieux" ; sinon le nom tel quel. */
+function salutation(name: string): string {
+  const m = name.match(/^M(?:e|aître)\.?\s+(.+)$/i);
+  if (m) {
+    const parts = m[1].trim().split(/\s+/).filter(Boolean);
+    return "Maître " + parts[parts.length - 1];
+  }
+  return name;
+}
 
 function SavePill({ saved, answered }: { saved: boolean; answered: number }) {
   if (answered === 0) return <span className="font-mono text-[11px] text-rw-tertiary">Prêt</span>;
@@ -246,7 +134,7 @@ function Intro({
   onStart,
   answered,
 }: {
-  client: ReturnType<typeof resolveClient>;
+  client: ClientInfo;
   hasDraft: boolean;
   onStart: () => void;
   answered: number;
@@ -302,17 +190,15 @@ function Step({
   addFiles: (qid: string, list: FileList | null) => void;
   removeFile: (qid: string, idx: number) => void;
 }) {
-  const s = SECTIONS[index];
+  const sec = SECTIONS[index];
   return (
     <div className="mx-auto max-w-2xl px-6 pb-32 pt-12 sm:px-8 sm:pt-16">
-      <p className="rw-eyebrow text-rw-orange">
-        Section {String(index + 1).padStart(2, "0")} — sur 09
-      </p>
-      <h2 className="mt-3 text-[clamp(1.9rem,4.5vw,2.8rem)]">{s.t}</h2>
-      <p className="mt-3 max-w-lg text-[15px] text-rw-muted">{s.d}</p>
+      <p className="rw-eyebrow text-rw-orange">Section {String(index + 1).padStart(2, "0")} — sur 09</p>
+      <h2 className="mt-3 text-[clamp(1.9rem,4.5vw,2.8rem)]">{sec.t}</h2>
+      <p className="mt-3 max-w-lg text-[15px] text-rw-muted">{sec.d}</p>
 
       <div className="mt-10 space-y-7">
-        {s.qs.map((q) => (
+        {sec.qs.map((q) => (
           <QuestionBlock
             key={q.id}
             q={q}
@@ -339,7 +225,7 @@ function Review({
   error,
 }: {
   answers: Answers;
-  missing: ReturnType<typeof missingEssentials>;
+  missing: Question[];
   onEdit: (i: number) => void;
   onBack: () => void;
   onSubmit: () => void;
@@ -356,11 +242,11 @@ function Review({
       </p>
 
       <div className="mt-10 space-y-8">
-        {SECTIONS.map((s, i) => (
+        {SECTIONS.map((sec, i) => (
           <section key={i} className="border-2 border-rw-black">
             <div className="flex items-center justify-between border-b-2 border-rw-black bg-rw-paper-subtle px-5 py-3">
               <h3 className="text-sm">
-                {String(i + 1).padStart(2, "0")} · {s.t}
+                {String(i + 1).padStart(2, "0")} · {sec.t}
               </h3>
               <button
                 type="button"
@@ -371,7 +257,7 @@ function Review({
               </button>
             </div>
             <dl>
-              {s.qs.map((q) => {
+              {sec.qs.map((q) => {
                 const empty = !isAnswered(q, answers);
                 return (
                   <div key={q.id} className="border-b border-rw-line-subtle px-5 py-3.5 last:border-b-0">
@@ -430,7 +316,7 @@ function Review({
   );
 }
 
-function Done({ client, onDownload }: { client: ReturnType<typeof resolveClient>; onDownload: () => void }) {
+function Done({ client, onDownload }: { client: ClientInfo; onDownload: () => void }) {
   return (
     <div className="mx-auto max-w-xl px-6 py-24 text-center sm:py-32">
       <div className="mx-auto grid size-20 place-items-center border-2 border-rw-black bg-rw-orange shadow-[var(--shadow-hard)]">

@@ -1,4 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { z } from "zod";
+import { MAX_BODY_B64 } from "../src/lib/attachmentLimits";
 
 /**
  * Reçoit un cadrage et l'écrit dans le dépôt privé GitHub des réponses.
@@ -17,11 +19,28 @@ const API = "https://api.github.com";
 // uniquement si l'issue est créée par un AUTRE compte que celui-ci (cf. compte bot).
 const NOTIFY = process.env.NOTIFY_GITHUB_HANDLE || "NicolasRewolf";
 
-interface Attachment {
-  name: string;
-  qid: string;
-  b64: string;
-}
+// Schéma de la charge au seam de soumission : l'interface impose la forme, pas la convention.
+const PayloadSchema = z.object({
+  slug: z.string().optional(),
+  client: z.object({
+    slug: z.string().optional(),
+    name: z.string().min(1),
+    title: z.string().optional(),
+    project: z.string().optional(),
+    intro: z.string().optional(),
+  }),
+  answers: z.record(z.union([z.string(), z.array(z.string())])).optional().default({}),
+  reportMarkdown: z.string().min(1),
+  stats: z
+    .object({ answered: z.number(), total: z.number(), missingEssential: z.number() })
+    .partial()
+    .optional(),
+  submittedAt: z.string().optional(),
+  attachments: z
+    .array(z.object({ qid: z.string(), name: z.string(), b64: z.string() }))
+    .optional()
+    .default([]),
+});
 
 function gh(token: string) {
   return (path: string, init: RequestInit = {}) =>
@@ -52,19 +71,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!token) return res.status(500).json({ error: "Configuration serveur incomplète (GITHUB_TOKEN manquant)." });
 
   try {
-    const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
-    const { client, answers, reportMarkdown, stats, submittedAt } = body || {};
-    const attachments: Attachment[] = Array.isArray(body?.attachments) ? body.attachments : [];
+    const raw = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+    const parsed = PayloadSchema.safeParse(raw);
+    if (!parsed.success) {
+      return res.status(400).json({ error: "Charge utile invalide.", details: parsed.error.issues.slice(0, 3) });
+    }
+    const { client, answers, reportMarkdown, stats, submittedAt, attachments } = parsed.data;
 
-    if (!reportMarkdown || !client?.name) return res.status(400).json({ error: "Charge utile invalide." });
-
-    // Garde-fou : la limite de corps des fonctions Vercel est ~4,5 Mo.
-    const attachBytes = attachments.reduce((n, a) => n + (typeof a?.b64 === "string" ? a.b64.length : 0), 0);
-    if (attachBytes > 4_200_000) {
+    // Garde-fou : limite de corps des fonctions Vercel (~4,5 Mo), constante partagée.
+    const attachBytes = attachments.reduce((n, a) => n + a.b64.length, 0);
+    if (attachBytes > MAX_BODY_B64) {
       return res.status(413).json({ error: "Pièces jointes trop volumineuses — réessayez sans les fichiers les plus lourds." });
     }
 
-    const slug = safeSlug(body?.slug || client?.slug);
+    const slug = safeSlug(parsed.data.slug || client.slug || "");
     const api = gh(token);
     const [owner, repo] = REPO.split("/");
     const dir = `responses/${slug}`;
@@ -101,7 +121,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // 1) Rapport + pièces jointes
     await putFile(`${dir}/report.md`, b64utf8(reportMarkdown), `Cadrage ${slug} — ${stamp}`);
     for (const att of attachments.slice(0, 20)) {
-      if (!att?.b64) continue;
+      if (!att.b64) continue;
       await putFile(`${dir}/attachments/${safeName(att.name)}`, att.b64, `Pièce jointe ${slug} — ${safeName(att.name)}`);
     }
 
