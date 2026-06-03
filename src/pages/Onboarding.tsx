@@ -242,38 +242,33 @@ function Intro({
   answered: number;
 }) {
   return (
-    <div className="mx-auto max-w-2xl px-6 py-16 sm:px-8 sm:py-24">
+    <div className="mx-auto flex min-h-[calc(100dvh-3.5rem)] max-w-2xl flex-col justify-center px-6 py-10 sm:px-8">
       <p className="rw-eyebrow text-rw-orange">Questionnaire de cadrage</p>
-      <h1 className="mt-5 text-[clamp(2.6rem,7vw,4.5rem)] leading-[0.92]">
+      <h1 className="mt-4 text-[clamp(2.1rem,6vw,3.9rem)] leading-[0.94]">
         Donnons à votre cabinet une présence à la&nbsp;<span className="text-rw-orange">hauteur</span>.
       </h1>
-      <p className="mt-7 max-w-xl text-[17px] leading-relaxed text-rw-muted">
-        Avant de dessiner la moindre piste, on prend le temps de vous comprendre — votre cabinet, vos ambitions, votre
-        clientèle, vos goûts. Vos réponses nous permettent de bâtir une proposition juste et un devis précis.
-      </p>
-      <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-rw-tertiary">
-        Répondez librement. Aucune question n'est piégée : ce qui est marqué « facultatif » peut tout à fait attendre.
+      <p className="mt-5 max-w-xl text-[16px] leading-relaxed text-rw-muted">
+        Avant de dessiner la moindre piste, on prend le temps de vous comprendre. Répondez librement — ce qui est marqué
+        « facultatif » peut tout à fait attendre. Vos réponses nous permettent un devis juste et précis.
       </p>
 
-      <div className="mt-9 flex max-w-md items-center gap-4 border-2 border-rw-black bg-white p-4 shadow-[var(--shadow-hard)]">
+      <div className="mt-6 flex max-w-md items-center gap-4 border-2 border-rw-black bg-white p-4 shadow-[var(--shadow-hard)]">
         <div className="grid size-12 shrink-0 place-items-center bg-rw-orange font-bold text-rw-black">
           {client.name.replace(/^Me\s+/i, "").charAt(0).toUpperCase()}
         </div>
         <div className="min-w-0">
           <p className="truncate font-bold uppercase tracking-tight">{client.name}</p>
-          <p className="text-[13px] text-rw-muted">
-            {client.title ? `${client.title} · ` : ""}préparé par REWOLF Studio
-          </p>
+          <p className="text-[13px] text-rw-muted">{client.title ? `${client.title} · ` : ""}préparé par REWOLF Studio</p>
         </div>
       </div>
 
-      <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 font-mono text-[12px] text-rw-muted">
-        <span>≈ 20–30 MIN</span>
-        <span>52 QUESTIONS · 9 THÈMES</span>
+      <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 font-mono text-[12px] text-rw-muted">
+        <span>≈ 15–25 MIN</span>
+        <span>{TOTAL_Q} QUESTIONS · 9 THÈMES</span>
         <span>ENREGISTREMENT AUTO</span>
       </div>
 
-      <div className="mt-10">
+      <div className="mt-8">
         <Button variant="rw" size="lg" onClick={onStart}>
           {hasDraft ? `Reprendre (${answered}/${TOTAL_Q})` : "Commencer le questionnaire"} <ArrowRight className="size-5" />
         </Button>

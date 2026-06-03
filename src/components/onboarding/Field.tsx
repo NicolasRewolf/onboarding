@@ -154,41 +154,120 @@ export function Field({ q, answers, files, set, addFiles, removeFile }: FieldPro
         </div>
       )}
 
-      {/* ── Pièces jointes ── */}
-      {q.file && (
-        <div className="space-y-2">
-          <label className="flex cursor-pointer items-center gap-3 border-2 border-dashed border-rw-black bg-white px-4 py-3 text-sm text-rw-muted transition-colors hover:bg-rw-paper-subtle hover:text-rw-black">
-            <Upload className="size-4 shrink-0 text-rw-orange" />
-            <span className="font-medium">Joindre un fichier (logo, photo, document…)</span>
-            <input
-              type="file"
-              multiple
-              className="hidden"
-              onChange={(e) => {
-                addFiles(q.id, e.target.files);
-                e.currentTarget.value = "";
-              }}
-            />
-          </label>
-          {files.length > 0 && (
-            <div className="space-y-1.5">
-              {files.map((f, i) => (
-                <div key={i} className="flex items-center gap-2 border border-rw-line-subtle bg-rw-paper-subtle px-3 py-2 text-[13px]">
-                  <Paperclip className="size-3.5 shrink-0 text-rw-muted" />
-                  <span className="truncate">{f.name}</span>
-                  <span className="ml-1 shrink-0 text-xs text-rw-tertiary">{Math.ceil(f.size / 1024)} Ko</span>
-                  <button
-                    type="button"
-                    onClick={() => removeFile(q.id, i)}
-                    className="ml-auto shrink-0 text-rw-tertiary hover:text-rw-danger"
-                    aria-label="Retirer"
-                  >
-                    <X className="size-4" />
-                  </button>
-                </div>
-              ))}
+      {/* ── Logo / identité (branchement Oui / Non) ── */}
+      {q.type === "logo" && (
+        <>
+          <div className="inline-flex border-2 border-rw-black">
+            {["Oui", "Non"].map((opt, i) => {
+              const on = str === opt;
+              return (
+                <button
+                  key={opt}
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() => set(q.id, on ? "" : opt)}
+                  className={cn(
+                    "px-7 py-2.5 text-sm font-bold uppercase tracking-tight transition-colors",
+                    i === 0 && "border-r-2 border-rw-black",
+                    on ? "bg-rw-orange text-rw-black" : "bg-white text-rw-muted hover:bg-rw-paper-subtle",
+                  )}
+                >
+                  {opt}
+                </button>
+              );
+            })}
+          </div>
+
+          {str === "Oui" && (
+            <div className="space-y-2">
+              <p className="font-mono text-xs text-rw-tertiary">Partagez votre logo / charte — joignez le fichier ou collez un lien.</p>
+              <input
+                className={INPUT}
+                placeholder="Lien vers votre logo / charte (optionnel)"
+                value={typeof answers[q.id + "_link"] === "string" ? (answers[q.id + "_link"] as string) : ""}
+                onChange={(e) => set(q.id + "_link", e.target.value)}
+              />
+              <FileZone qid={q.id} files={files} addFiles={addFiles} removeFile={removeFile} />
             </div>
           )}
+
+          {str === "Non" && (
+            <div className="space-y-3 border-l-4 border-rw-orange bg-rw-orange/5 p-4">
+              <p className="text-[15px] text-rw-black">Parfait — c'est notre métier. On peut créer votre identité de A à Z.</p>
+              <div className="flex flex-wrap gap-2.5">
+                {["Oui, créez mon identité", "On en parle ensemble"].map((opt) => {
+                  const on = answers[q.id + "_branding"] === opt;
+                  return (
+                    <button
+                      key={opt}
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() => set(q.id + "_branding", on ? "" : opt)}
+                      className={cn(
+                        "inline-flex items-center gap-2 border-2 border-rw-black px-4 py-2.5 text-sm font-medium transition-colors",
+                        on ? "bg-rw-orange text-rw-black" : "bg-white text-rw-black hover:bg-rw-paper-subtle",
+                      )}
+                    >
+                      {on && <Check className="size-3.5 shrink-0" />}
+                      {opt}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* ── Pièces jointes ── */}
+      {q.file && <FileZone qid={q.id} files={files} addFiles={addFiles} removeFile={removeFile} />}
+    </div>
+  );
+}
+
+function FileZone({
+  qid,
+  files,
+  addFiles,
+  removeFile,
+}: {
+  qid: string;
+  files: File[];
+  addFiles: (qid: string, list: FileList | null) => void;
+  removeFile: (qid: string, idx: number) => void;
+}) {
+  return (
+    <div className="space-y-2">
+      <label className="flex cursor-pointer items-center gap-3 border-2 border-dashed border-rw-black bg-white px-4 py-3 text-sm text-rw-muted transition-colors hover:bg-rw-paper-subtle hover:text-rw-black">
+        <Upload className="size-4 shrink-0 text-rw-orange" />
+        <span className="font-medium">Joindre un fichier (logo, photo, document…)</span>
+        <input
+          type="file"
+          multiple
+          className="hidden"
+          onChange={(e) => {
+            addFiles(qid, e.target.files);
+            e.currentTarget.value = "";
+          }}
+        />
+      </label>
+      {files.length > 0 && (
+        <div className="space-y-1.5">
+          {files.map((f, i) => (
+            <div key={i} className="flex items-center gap-2 border border-rw-line-subtle bg-rw-paper-subtle px-3 py-2 text-[13px]">
+              <Paperclip className="size-3.5 shrink-0 text-rw-muted" />
+              <span className="truncate">{f.name}</span>
+              <span className="ml-1 shrink-0 text-xs text-rw-tertiary">{Math.ceil(f.size / 1024)} Ko</span>
+              <button
+                type="button"
+                onClick={() => removeFile(qid, i)}
+                className="ml-auto shrink-0 text-rw-tertiary hover:text-rw-danger"
+                aria-label="Retirer"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+          ))}
         </div>
       )}
     </div>

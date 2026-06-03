@@ -15,6 +15,7 @@ export function isAnswered(q: Question, a: Answers): boolean {
   switch (q.type) {
     case "boolean":
     case "booleanDetail":
+    case "logo":
       return v === "Oui" || v === "Non";
     case "multi":
       return (Array.isArray(v) && v.length > 0) || !!a[q.id + "_other"] || hasFiles;
@@ -42,6 +43,17 @@ export function formatAnswer(q: Question, a: Answers): string {
     out = (typeof v === "string" ? v : "") || "";
     const det = a[q.id + "_detail"];
     if (v === "Oui" && typeof det === "string" && det.trim()) out += " — " + det.trim();
+  } else if (q.type === "logo") {
+    if (v === "Oui") {
+      out = "Oui — possède déjà une identité visuelle";
+      const files = a[q.id + "_files"];
+      if (Array.isArray(files) && files.length) out += "\n📎 " + files.join(", ");
+      const link = a[q.id + "_link"];
+      if (typeof link === "string" && link.trim()) out += "\n🔗 " + link.trim();
+    } else if (v === "Non") {
+      const branding = a[q.id + "_branding"];
+      out = "Non — " + (typeof branding === "string" && branding.trim() ? branding.trim() : "souhaite que REWOLF crée son identité");
+    }
   } else {
     out = typeof v === "string" ? v : "";
   }
