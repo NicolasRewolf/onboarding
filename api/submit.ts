@@ -1,0 +1,108 @@
+import type { VercelRequest, VercelResponse } from "@vercel/node";
+
+/**
+ * Reçoit un cadrage et l'écrit dans le dépôt privé GitHub des réponses.
+ * Aucune donnée n'est stockée ailleurs. Le token reste côté serveur (env Vercel).
+ *
+ * Variables d'environnement attendues sur Vercel :
+ *   GITHUB_TOKEN     — PAT fine-grained, accès Contents + Issues (RW) au repo réponses
+ *   RESPONSES_REPO   — "owner/repo"  (défaut: NicolasRewolf/onboarding-responses)
+ *   RESPONSES_BRANCH — branche       (défaut: main)
+ */
+
+const REPO = process.env.RESPONSES_REPO || "NicolasRewolf/onboarding-responses";
+const BRANCH = process.env.RESPONSES_BRANCH || "main";
+const API = "https://api.github.com";
+
+interface Attachment {
+  name: string;
+  qid: string;
+  b64: string;
+}
+
+function gh(token: string) {
+  return (path: string, init: RequestInit = {}) =>
+    fetch(`${API}${path}`, {
+      ...init,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "rewolf-onboarding",
+        "Content-Type": "application/json",
+        ...(init.headers || {}),
+      },
+    });
+}
+
+const b64utf8 = (s: string) => Buffer.from(s, "utf-8").toString("base64");
+const safeSlug = (s: string) => String(s || "client").toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 64) || "client";
+const safeName = (s: string) => String(s || "fichier").replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 100);
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method !== "POST") {
+    res.setHeader("Allow", "POST");
+    return res.status(405).json({ error: "Méthode non autorisée" });
+  }
+
+  const token = process.env.GITHUB_TOKEN;
+  if (!token) return res.status(500).json({ error: "Configuration serveur incomplète (GITHUB_TOKEN manquant)." });
+
+  try {
+    const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+    const { client, answers, reportMarkdown, stats, submittedAt } = body || {};
+    const attachments: Attachment[] = Array.isArray(body?.attachments) ? body.attachments : [];
+
+    if (!reportMarkdown || !client?.name) return res.status(400).json({ error: "Charge utile invalide." });
+
+    const slug = safeSlug(body?.slug || client?.slug);
+    const api = gh(token);
+    const [owner, repo] = REPO.split("/");
+    const dir = `responses/${slug}`;
+
+    // Met à jour (ou crée) un fichier ; récupère le sha existant si besoin.
+    async function putFile(path: string, contentB64: string, message: string) {
+      let sha: string | undefined;
+      const head = await api(`/repos/${REPO}/contents/${encodeURIComponent(path)}?ref=${BRANCH}`);
+      if (head.ok) sha = ((await head.json()) as { sha?: string }).sha;
+      const put = await api(`/repos/${REPO}/contents/${encodeURIComponent(path)}`, {
+        method: "PUT",
+        body: JSON.stringify({ message, content: contentB64, branch: BRANCH, ...(sha ? { sha } : {}) }),
+      });
+      if (!put.ok) throw new Error(`GitHub ${put.status} sur ${path}: ${await put.text()}`);
+      return !sha; // true => fichier nouvellement créé
+    }
+
+    const stamp = (submittedAt || new Date().toISOString()).toString();
+    const isNew = await putFile(`${dir}/report.md`, b64utf8(reportMarkdown), `Cadrage ${slug} — ${stamp}`);
+    await putFile(
+      `${dir}/data.json`,
+      b64utf8(JSON.stringify({ client, answers, stats, submittedAt: stamp }, null, 2)),
+      `Cadrage ${slug} (data) — ${stamp}`,
+    );
+
+    // Pièces jointes (déjà encodées base64 côté client)
+    for (const att of attachments.slice(0, 20)) {
+      if (!att?.b64) continue;
+      await putFile(`${dir}/attachments/${safeName(att.name)}`, att.b64, `Pièce jointe ${slug} — ${safeName(att.name)}`);
+    }
+
+    // Notification : une issue à la première soumission
+    if (isNew) {
+      await api(`/repos/${REPO}/issues`, {
+        method: "POST",
+        body: JSON.stringify({
+          title: `Cadrage — ${client.name}`,
+          body: `${reportMarkdown}\n\n— [Voir le dossier](../tree/${BRANCH}/${dir})`,
+        }),
+      }).catch(() => undefined); // l'issue est un bonus : ne bloque pas l'envoi
+    }
+
+    return res.status(200).json({
+      ok: true,
+      url: `https://github.com/${owner}/${repo}/blob/${BRANCH}/${dir}/report.md`,
+    });
+  } catch (e) {
+    return res.status(500).json({ error: e instanceof Error ? e.message : "Erreur serveur" });
+  }
+}

@@ -1,0 +1,198 @@
+@import "@fontsource-variable/geist";
+@import "tailwindcss";
+
+/* ════════════════════════════════════════════════════════════════════
+   REWOLF — Design tokens
+   DA : orange #ff4f04 · noir · blanc · grotesque gras capitales · brutaliste
+   Architecture de tokens héritée du rewolf-starter (jamais de couleur hors token).
+   ════════════════════════════════════════════════════════════════════ */
+
+@layer base {
+  :root {
+    /* ── Marque ── */
+    --rw-orange:      #FF4F04;
+    --rw-orange-ink:  #E84500;   /* hover / pressed */
+    --rw-black:       #0A0A0A;
+    --rw-white:       #FFFFFF;
+
+    /* ── Neutres ── */
+    --color-canvas:        #FFFFFF;
+    --color-surface:       #FFFFFF;
+    --color-surface-subtle:#F4F2EC;
+    --color-border:        #0A0A0A;   /* brutaliste : trait noir franc */
+    --color-border-subtle: #E4E0D7;
+
+    /* ── Texte ── */
+    --color-text-primary:   #0A0A0A;
+    --color-text-secondary: #5C5A54;
+    --color-text-tertiary:  #918E86;
+    --color-text-inverse:   #FFFFFF;
+
+    /* ── Signal ── */
+    --color-success: #1F7A4D;
+    --color-warning: #B45309;
+    --color-danger:  #C42600;
+    --color-info:    #1E40AF;
+
+    /* ── Sémantique (shadcn) ── */
+    --background: var(--color-canvas);
+    --foreground: var(--color-text-primary);
+    --card: var(--color-surface);
+    --card-foreground: var(--color-text-primary);
+    --border: var(--color-border);
+    --input: var(--color-border);
+    --ring: var(--rw-orange);
+    --primary: var(--rw-orange);
+    --primary-foreground: var(--rw-black);
+    --secondary: var(--rw-black);
+    --secondary-foreground: var(--rw-white);
+    --muted: var(--color-surface-subtle);
+    --muted-foreground: var(--color-text-secondary);
+    --destructive: var(--color-danger);
+    --destructive-foreground: var(--color-text-inverse);
+    --accent: var(--rw-orange);
+    --accent-foreground: var(--rw-black);
+    --popover: var(--color-surface);
+    --popover-foreground: var(--color-text-primary);
+
+    /* ── Rayon : brutaliste, arêtes franches ── */
+    --radius-sm: 0px;
+    --radius-md: 0px;
+    --radius-lg: 0px;
+    --radius-xl: 0px;
+    --radius: 0px;
+
+    /* ── Typo ── */
+    --font-sans: "Geist Variable", system-ui, -apple-system, sans-serif;
+    --font-mono: ui-monospace, "SFMono-Regular", "SF Mono", Menlo, Consolas, monospace;
+
+    /* ── Trait brutaliste ── */
+    --rw-stroke: 2px;
+    --rw-stroke-bold: 3px;
+
+    /* ── Ombre dure (pas de flou : décalage net) ── */
+    --shadow-hard:    4px 4px 0 0 var(--rw-black);
+    --shadow-hard-sm: 2px 2px 0 0 var(--rw-black);
+    --shadow-hard-orange: 4px 4px 0 0 var(--rw-orange);
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Utilitaires de marque : bg-rw-orange, text-rw-black, border-rw-line… */
+  --color-rw-orange: var(--rw-orange);
+  --color-rw-orange-ink: var(--rw-orange-ink);
+  --color-rw-black: var(--rw-black);
+  --color-rw-white: var(--rw-white);
+  --color-rw-paper-subtle: var(--color-surface-subtle);
+  --color-rw-line: var(--color-border);
+  --color-rw-line-subtle: var(--color-border-subtle);
+  --color-rw-muted: var(--color-text-secondary);
+  --color-rw-tertiary: var(--color-text-tertiary);
+  --color-rw-success: var(--color-success);
+  --color-rw-danger: var(--color-danger);
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    border-color: var(--color-border-subtle);
+  }
+
+  html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.55;
+    letter-spacing: -0.011em;
+    margin: 0;
+  }
+
+  /* Titres : grotesque gras, capitales, crénage serré — signature brutaliste */
+  h1, h2, h3, h4 {
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 0.98;
+    text-transform: uppercase;
+    margin: 0;
+  }
+
+  code, pre, kbd, samp { font-family: var(--font-mono); }
+
+  ::selection { background: var(--rw-orange); color: var(--rw-black); }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--rw-black); border: 3px solid var(--background); }
+
+  /* Focus visible : anneau orange franc, accessible */
+  :focus-visible {
+    outline: var(--rw-stroke) solid var(--rw-orange);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  }
+}
+
+/* ── Primitives brutalistes réutilisables ── */
+@layer components {
+  .rw-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  .rw-tag {
+    display: inline-flex; align-items: center;
+    background: var(--rw-orange); color: var(--rw-black);
+    font-family: var(--font-mono);
+    font-size: 0.625rem; letter-spacing: 0.14em; text-transform: uppercase;
+    font-weight: 600; padding: 0.25rem 0.5rem;
+  }
+  /* Carte/champ à trait franc + ombre dure */
+  .rw-hard {
+    border: var(--rw-stroke) solid var(--rw-black);
+    background: var(--rw-white);
+  }
+  .rw-shadow { box-shadow: var(--shadow-hard); }
+  .rw-shadow-sm { box-shadow: var(--shadow-hard-sm); }
+}
