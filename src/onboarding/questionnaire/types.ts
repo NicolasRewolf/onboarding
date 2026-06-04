@@ -49,6 +49,8 @@ export interface Section {
 export interface Questionnaire {
   id: string;
   tone: "vous" | "tu";
+  /** Accroche du titre d'intro, après le nom du client (« {Nom}, {tagline} »). */
+  tagline: string;
   sections: Section[];
   allQ: Question[];
   total: number;

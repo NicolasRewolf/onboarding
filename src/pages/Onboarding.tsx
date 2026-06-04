@@ -154,7 +154,7 @@ function Intro({
     <div className="mx-auto flex min-h-[calc(100dvh-3.5rem)] max-w-2xl flex-col justify-center px-6 py-10 sm:px-8">
       <p className="rw-eyebrow text-rw-orange">Questionnaire de cadrage</p>
       <h1 className="mt-4 text-[clamp(2.1rem,6vw,3.9rem)] leading-[0.94]">
-        <span className="text-rw-orange">{salutation(client.name)}</span>, faisons connaissance.
+        <span className="text-rw-orange">{salutation(client.name)}</span>, {qn.tagline}
       </h1>
       <p className="mt-5 max-w-xl text-[16px] leading-relaxed text-rw-muted">
         {T(

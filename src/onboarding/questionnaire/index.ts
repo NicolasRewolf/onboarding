@@ -7,7 +7,12 @@ import type { Questionnaire, Section, RawSection } from "./types";
 import { CADRAGE_RAW } from "./cadrage";
 import { HORLOGER_RAW } from "./horloger";
 
-function buildQuestionnaire(id: string, raw: RawSection[], tone: "vous" | "tu" = "vous"): Questionnaire {
+function buildQuestionnaire(
+  id: string,
+  raw: RawSection[],
+  tone: "vous" | "tu" = "vous",
+  tagline = "faisons connaissance.",
+): Questionnaire {
   let n = 0;
   const sections: Section[] = raw.map((s) => ({
     t: s.t,
@@ -15,12 +20,12 @@ function buildQuestionnaire(id: string, raw: RawSection[], tone: "vous" | "tu" =
     qs: s.qs.map((q) => ({ ...q, n: ++n })),
   }));
   const allQ = sections.flatMap((s) => s.qs);
-  return { id, tone, sections, allQ, total: allQ.length, essentialIds: allQ.filter((q) => q.p === "E").map((q) => q.id) };
+  return { id, tone, tagline, sections, allQ, total: allQ.length, essentialIds: allQ.filter((q) => q.p === "E").map((q) => q.id) };
 }
 
 export const QUESTIONNAIRES: Record<string, Questionnaire> = {
   cadrage: buildQuestionnaire("cadrage", CADRAGE_RAW, "vous"),
-  horloger: buildQuestionnaire("horloger", HORLOGER_RAW, "tu"),
+  horloger: buildQuestionnaire("horloger", HORLOGER_RAW, "tu", "TIC TAC TIC TAC"),
 };
 
 export const DEFAULT_QUESTIONNAIRE = "cadrage";
