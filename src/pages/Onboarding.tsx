@@ -89,7 +89,7 @@ export default function Onboarding() {
             />
           )}
 
-          {s.screen === "done" && <Done client={client} onDownload={s.downloadReport} />}
+          {s.screen === "done" && <Done client={client} tone={qn.tone} onDownload={s.downloadReport} />}
         </main>
       </div>
 
@@ -124,6 +124,9 @@ function salutation(name: string): string {
   return name;
 }
 
+/** Choisit la formulation selon le ton du questionnaire (vouvoiement / tutoiement). */
+const T = (tone: "vous" | "tu", vous: string, tu: string): string => (tone === "tu" ? tu : vous);
+
 function SavePill({ saved, answered }: { saved: boolean; answered: number }) {
   if (answered === 0) return <span className="font-mono text-[11px] text-rw-tertiary">Prêt</span>;
   return (
@@ -154,8 +157,11 @@ function Intro({
         <span className="text-rw-orange">{salutation(client.name)}</span>, faisons connaissance.
       </h1>
       <p className="mt-5 max-w-xl text-[16px] leading-relaxed text-rw-muted">
-        Avant de dessiner la moindre piste, on prend le temps de vous comprendre. Répondez librement — ce qui est marqué
-        « facultatif » peut tout à fait attendre. Vos réponses nous permettent un devis juste et précis.
+        {T(
+          qn.tone,
+          "Avant de dessiner la moindre piste, on prend le temps de vous comprendre. Répondez librement — ce qui est marqué « facultatif » peut tout à fait attendre. Vos réponses nous permettent un devis juste et précis.",
+          "Avant de dessiner la moindre piste, on prend le temps de te comprendre. Réponds librement — ce qui est marqué « facultatif » peut tout à fait attendre. Tes réponses nous permettent un devis juste et précis.",
+        )}
       </p>
 
       <div className="mt-6 flex max-w-md items-center gap-4 border-2 border-rw-black bg-white p-4 shadow-[var(--shadow-hard)]">
@@ -254,7 +260,11 @@ function Review({
       <p className="rw-eyebrow text-rw-orange">Dernière étape</p>
       <h2 className="mt-3 text-[clamp(2rem,5vw,3rem)]">Relisez, ajustez, envoyez.</h2>
       <p className="mt-3 max-w-lg text-[15px] text-rw-muted">
-        Voici la synthèse de vos réponses. Vous pouvez encore modifier chaque section avant de nous l'envoyer.
+        {T(
+          qn.tone,
+          "Voici la synthèse de vos réponses. Vous pouvez encore modifier chaque section avant de nous l'envoyer.",
+          "Voici la synthèse de tes réponses. Tu peux encore modifier chaque section avant de nous l'envoyer.",
+        )}
       </p>
 
       <div className="mt-10 space-y-8">
@@ -304,7 +314,11 @@ function Review({
               {missing.length} question{missing.length > 1 ? "s" : ""} essentielle{missing.length > 1 ? "s" : ""} à compléter
             </p>
             <p className="mt-1 text-[14px] text-rw-muted">
-              Vous pouvez tout de même envoyer — mais ces réponses nous aident à établir un devis plus précis.
+              {T(
+                qn.tone,
+                "Vous pouvez tout de même envoyer — mais ces réponses nous aident à établir un devis plus précis.",
+                "Tu peux tout de même envoyer — mais ces réponses nous aident à établir un devis plus précis.",
+              )}
             </p>
           </div>
         </div>
@@ -312,7 +326,8 @@ function Review({
 
       {error && (
         <p className="mt-6 border-2 border-rw-danger bg-rw-danger/5 px-4 py-3 text-sm text-rw-danger">
-          L'envoi a échoué : {error}. Vos réponses restent enregistrées sur cet appareil.
+          L'envoi a échoué : {error}.{" "}
+          {T(qn.tone, "Vos réponses restent enregistrées sur cet appareil.", "Tes réponses restent enregistrées sur cet appareil.")}
         </p>
       )}
 
@@ -332,7 +347,7 @@ function Review({
   );
 }
 
-function Done({ client, onDownload }: { client: ClientInfo; onDownload: () => void }) {
+function Done({ client, tone, onDownload }: { client: ClientInfo; tone: "vous" | "tu"; onDownload: () => void }) {
   return (
     <div className="mx-auto max-w-xl px-6 py-24 text-center sm:py-32">
       <div className="mx-auto grid size-20 place-items-center border-2 border-rw-black bg-rw-orange shadow-[var(--shadow-hard)]">
@@ -342,8 +357,11 @@ function Done({ client, onDownload }: { client: ClientInfo; onDownload: () => vo
         Merci, <span className="text-rw-orange">infiniment</span>.
       </h1>
       <p className="mx-auto mt-5 max-w-md text-[16px] leading-relaxed text-rw-muted">
-        Vos réponses nous sont parvenues. C'est exactement ce qu'il nous faut pour vous préparer une proposition
-        sur-mesure et un devis précis. Nous revenons vers vous très vite.
+        {T(
+          tone,
+          "Vos réponses nous sont parvenues. C'est exactement ce qu'il nous faut pour vous préparer une proposition sur-mesure et un devis précis. Nous revenons vers vous très vite.",
+          "Tes réponses nous sont parvenues. C'est exactement ce qu'il nous faut pour te préparer une proposition sur-mesure et un devis précis. On revient vers toi très vite.",
+        )}
       </p>
       <div className="mt-9 flex flex-wrap justify-center gap-3">
         <Button variant="rwOutline" onClick={onDownload}>
