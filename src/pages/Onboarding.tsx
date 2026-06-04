@@ -373,6 +373,29 @@ function Done({ client, tone, onDownload }: { client: ClientInfo; tone: "vous" |
           </a>
         </Button>
       </div>
+
+      {/* Clin d'œil REWOLF — le coin de la meute 🐺 */}
+      <div className="mt-16 border-t border-rw-black/10 pt-10">
+        <p className="rw-eyebrow text-rw-orange">En attendant — le coin de la meute</p>
+        <p className="mx-auto mt-3 max-w-md text-[15px] leading-relaxed text-rw-muted">
+          {T(
+            tone,
+            "Le temps que Nicolas se penche sur votre projet et revienne vers vous : un petit reportage sur les loups pour patienter.",
+            "Le temps que Nicolas bosse sur ton site et te fasse un retour : un petit reportage sur les loups pour patienter.",
+          )}
+        </p>
+        <div className="relative mt-5 aspect-video overflow-hidden border-2 border-rw-black shadow-[var(--shadow-hard)]">
+          <iframe
+            className="absolute inset-0 h-full w-full"
+            src="https://www.youtube-nocookie.com/embed/9YZkCCABRJ4"
+            title="Reportage sur les loups — clin d'œil REWOLF"
+            loading="lazy"
+            allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+          />
+        </div>
+      </div>
     </div>
   );
 }
