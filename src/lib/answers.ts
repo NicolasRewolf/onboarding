@@ -1,4 +1,4 @@
-import { type Question, type Section, SECTIONS, ALL_Q, TOTAL_Q, ESSENTIAL_IDS } from "./questionnaire";
+import { type Question, type Section, type Questionnaire } from "./questionnaire";
 import { FIELD_VALUE, fileNames, type Answers } from "./fieldTypes";
 
 export type { Answers };
@@ -16,11 +16,9 @@ export function formatAnswer(q: Question, a: Answers): string {
   return out.trim();
 }
 
-export const answeredCount = (a: Answers): number => ALL_Q.filter((q) => isAnswered(q, a)).length;
+export const answeredCount = (qn: Questionnaire, a: Answers): number => qn.allQ.filter((q) => isAnswered(q, a)).length;
 export const sectionAnswered = (s: Section, a: Answers): number => s.qs.filter((q) => isAnswered(q, a)).length;
 export const sectionComplete = (s: Section, a: Answers): boolean =>
   sectionAnswered(s, a) > 0 && s.qs.filter((q) => q.p === "E").every((q) => isAnswered(q, a));
-export const missingEssentials = (a: Answers): Question[] =>
-  ESSENTIAL_IDS.map((id) => ALL_Q.find((q) => q.id === id)!).filter((q) => !isAnswered(q, a));
-
-export { SECTIONS, ALL_Q, TOTAL_Q, ESSENTIAL_IDS };
+export const missingEssentials = (qn: Questionnaire, a: Answers): Question[] =>
+  qn.essentialIds.map((id) => qn.allQ.find((q) => q.id === id)!).filter((q) => !isAnswered(q, a));

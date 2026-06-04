@@ -5,8 +5,8 @@ import { Wordmark } from "@/components/brand/Wordmark";
 import { ProgressRail } from "@/components/onboarding/ProgressRail";
 import { QuestionBlock } from "@/components/onboarding/QuestionBlock";
 import { Button } from "@/components/ui/button";
-import { SECTIONS, TOTAL_Q, formatAnswer, isAnswered, sectionAnswered, type Answers } from "@/lib/answers";
-import { type Question } from "@/lib/questionnaire";
+import { formatAnswer, isAnswered, sectionAnswered, type Answers } from "@/lib/answers";
+import { resolveQuestionnaire, type Question, type Questionnaire } from "@/lib/questionnaire";
 import { resolveClient, type ClientInfo } from "@/lib/clients";
 import { useCadrageSession } from "@/lib/useCadrageSession";
 import { cn } from "@/lib/utils";
@@ -15,9 +15,11 @@ export default function Onboarding() {
   const { slug = "client" } = useParams();
   const [params] = useSearchParams();
   const client = useMemo(() => resolveClient(slug, params), [slug, params]);
-  const s = useCadrageSession(client);
+  const qn = useMemo(() => resolveQuestionnaire(client.questionnaire), [client.questionnaire]);
+  const s = useCadrageSession(client, qn);
   const inStep = typeof s.screen === "number";
   const step = s.screen as number;
+  const nbSections = qn.sections.length;
 
   return (
     <div className="min-h-dvh bg-background text-foreground">
@@ -39,28 +41,31 @@ export default function Onboarding() {
           <div className="h-2 border-2 border-rw-black">
             <div
               className="h-full bg-rw-orange transition-[width] duration-500"
-              style={{ width: `${Math.round((s.answered / TOTAL_Q) * 100)}%` }}
+              style={{ width: `${Math.round((s.answered / qn.total) * 100)}%` }}
             />
           </div>
           <div className="mt-2 flex justify-between font-mono text-[11px] text-rw-muted">
-            <span>{SECTIONS[step].t}</span>
-            <span className="text-rw-black">Section {step + 1} / 9</span>
+            <span>{qn.sections[step].t}</span>
+            <span className="text-rw-black">
+              Section {step + 1} / {nbSections}
+            </span>
           </div>
         </div>
       )}
 
       <div className="flex">
         {(inStep || s.screen === "review") && (
-          <ProgressRail current={inStep ? step : "review"} answers={s.answers} go={(i) => s.goTo(i)} />
+          <ProgressRail qn={qn} current={inStep ? step : "review"} answers={s.answers} go={(i) => s.goTo(i)} />
         )}
 
         <main className="min-w-0 flex-1">
           {s.screen === "intro" && (
-            <Intro client={client} hasDraft={s.answered > 0} onStart={() => s.goTo(0)} answered={s.answered} />
+            <Intro qn={qn} client={client} hasDraft={s.answered > 0} onStart={() => s.goTo(0)} answered={s.answered} />
           )}
 
           {inStep && (
             <Step
+              qn={qn}
               index={step}
               answers={s.answers}
               files={s.files}
@@ -72,10 +77,11 @@ export default function Onboarding() {
 
           {s.screen === "review" && (
             <Review
+              qn={qn}
               answers={s.answers}
               missing={s.missing}
               onEdit={(i) => s.goTo(i)}
-              onBack={() => s.goTo(SECTIONS.length - 1)}
+              onBack={() => s.goTo(nbSections - 1)}
               onSubmit={s.submit}
               onDownload={s.downloadReport}
               submitting={s.submitting}
@@ -94,11 +100,11 @@ export default function Onboarding() {
             <ArrowLeft className="size-4" /> Retour
           </Button>
           <span className="hidden font-mono text-xs text-rw-muted sm:block">
-            Section <b className="text-rw-black">{step + 1}</b> / 9 ·{" "}
-            {sectionAnswered(SECTIONS[step], s.answers)}/{SECTIONS[step].qs.length}
+            Section <b className="text-rw-black">{step + 1}</b> / {nbSections} ·{" "}
+            {sectionAnswered(qn.sections[step], s.answers)}/{qn.sections[step].qs.length}
           </span>
-          <Button variant="rw" onClick={() => (step === SECTIONS.length - 1 ? s.goTo("review") : s.goTo(step + 1))}>
-            {step === SECTIONS.length - 1 ? "Vérifier" : "Continuer"} <ArrowRight className="size-4" />
+          <Button variant="rw" onClick={() => (step === nbSections - 1 ? s.goTo("review") : s.goTo(step + 1))}>
+            {step === nbSections - 1 ? "Vérifier" : "Continuer"} <ArrowRight className="size-4" />
           </Button>
         </div>
       )}
@@ -129,11 +135,13 @@ function SavePill({ saved, answered }: { saved: boolean; answered: number }) {
 }
 
 function Intro({
+  qn,
   client,
   hasDraft,
   onStart,
   answered,
 }: {
+  qn: Questionnaire;
   client: ClientInfo;
   hasDraft: boolean;
   onStart: () => void;
@@ -162,13 +170,15 @@ function Intro({
 
       <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 font-mono text-[12px] text-rw-muted">
         <span>≈ 15–25 MIN</span>
-        <span>{TOTAL_Q} QUESTIONS · 9 THÈMES</span>
+        <span>
+          {qn.total} QUESTIONS · {qn.sections.length} THÈMES
+        </span>
         <span>ENREGISTREMENT AUTO</span>
       </div>
 
       <div className="mt-8">
         <Button variant="rw" size="lg" onClick={onStart}>
-          {hasDraft ? `Reprendre (${answered}/${TOTAL_Q})` : "Commencer le questionnaire"} <ArrowRight className="size-5" />
+          {hasDraft ? `Reprendre (${answered}/${qn.total})` : "Commencer le questionnaire"} <ArrowRight className="size-5" />
         </Button>
       </div>
     </div>
@@ -176,6 +186,7 @@ function Intro({
 }
 
 function Step({
+  qn,
   index,
   answers,
   files,
@@ -183,6 +194,7 @@ function Step({
   addFiles,
   removeFile,
 }: {
+  qn: Questionnaire;
   index: number;
   answers: Answers;
   files: Record<string, File[]>;
@@ -190,10 +202,12 @@ function Step({
   addFiles: (qid: string, list: FileList | null) => void;
   removeFile: (qid: string, idx: number) => void;
 }) {
-  const sec = SECTIONS[index];
+  const sec = qn.sections[index];
   return (
     <div className="mx-auto max-w-2xl px-6 pb-32 pt-12 sm:px-8 sm:pt-16">
-      <p className="rw-eyebrow text-rw-orange">Section {String(index + 1).padStart(2, "0")} — sur 09</p>
+      <p className="rw-eyebrow text-rw-orange">
+        Section {String(index + 1).padStart(2, "0")} — sur {String(qn.sections.length).padStart(2, "0")}
+      </p>
       <h2 className="mt-3 text-[clamp(1.9rem,4.5vw,2.8rem)]">{sec.t}</h2>
       <p className="mt-3 max-w-lg text-[15px] text-rw-muted">{sec.d}</p>
 
@@ -215,6 +229,7 @@ function Step({
 }
 
 function Review({
+  qn,
   answers,
   missing,
   onEdit,
@@ -224,6 +239,7 @@ function Review({
   submitting,
   error,
 }: {
+  qn: Questionnaire;
   answers: Answers;
   missing: Question[];
   onEdit: (i: number) => void;
@@ -242,7 +258,7 @@ function Review({
       </p>
 
       <div className="mt-10 space-y-8">
-        {SECTIONS.map((sec, i) => (
+        {qn.sections.map((sec, i) => (
           <section key={i} className="border-2 border-rw-black">
             <div className="flex items-center justify-between border-b-2 border-rw-black bg-rw-paper-subtle px-5 py-3">
               <h3 className="text-sm">
@@ -323,7 +339,7 @@ function Done({ client, onDownload }: { client: ClientInfo; onDownload: () => vo
         <Check className="size-10 text-rw-black" strokeWidth={3} />
       </div>
       <h1 className="mt-8 text-[clamp(2.2rem,6vw,3.4rem)]">
-        Merci, <span className="text-rw-orange">Maître</span>.
+        Merci, <span className="text-rw-orange">infiniment</span>.
       </h1>
       <p className="mx-auto mt-5 max-w-md text-[16px] leading-relaxed text-rw-muted">
         Vos réponses nous sont parvenues. C'est exactement ce qu'il nous faut pour vous préparer une proposition

@@ -90,6 +90,11 @@ const logoValue: FieldValue = {
   },
 };
 
+const fontValue: FieldValue = {
+  isAnswered: (q, a) => !!a[q.id],
+  format: (q, a) => str(a[q.id]),
+};
+
 // Registre exhaustif : ajouter un membre à QType force une entrée ici (erreur TS sinon).
 export const FIELD_VALUE: Record<QType, FieldValue> = {
   text: textLike,
@@ -103,4 +108,5 @@ export const FIELD_VALUE: Record<QType, FieldValue> = {
   multi: multiValue,
   budget: budgetValue,
   logo: logoValue,
+  font: fontValue,
 };

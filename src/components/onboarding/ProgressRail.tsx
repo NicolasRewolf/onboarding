@@ -1,16 +1,18 @@
 import { Check } from "lucide-react";
-import { SECTIONS, TOTAL_Q, answeredCount, sectionComplete, type Answers } from "@/lib/answers";
+import { type Questionnaire } from "@/lib/questionnaire";
+import { answeredCount, sectionComplete, type Answers } from "@/lib/answers";
 import { cn } from "@/lib/utils";
 
 interface Props {
+  qn: Questionnaire;
   current: number | "review";
   answers: Answers;
   go: (i: number) => void;
 }
 
-export function ProgressRail({ current, answers, go }: Props) {
-  const answered = answeredCount(answers);
-  const pct = Math.round((answered / TOTAL_Q) * 100);
+export function ProgressRail({ qn, current, answers, go }: Props) {
+  const answered = answeredCount(qn, answers);
+  const pct = Math.round((answered / qn.total) * 100);
 
   return (
     <aside className="hidden w-[300px] shrink-0 border-r-2 border-rw-black lg:block">
@@ -23,7 +25,7 @@ export function ProgressRail({ current, answers, go }: Props) {
           </div>
           <div className="mt-2 flex items-baseline gap-1.5">
             <span className="font-mono text-2xl font-bold tabular-nums leading-none">{answered}</span>
-            <span className="font-mono text-sm text-rw-tertiary">/ {TOTAL_Q}</span>
+            <span className="font-mono text-sm text-rw-tertiary">/ {qn.total}</span>
           </div>
           <div className="mt-3 h-2.5 border-2 border-rw-black">
             <div className="h-full bg-rw-orange transition-[width] duration-500" style={{ width: `${pct}%` }} />
@@ -32,7 +34,7 @@ export function ProgressRail({ current, answers, go }: Props) {
 
         {/* Sections */}
         <nav className="flex flex-col gap-1">
-          {SECTIONS.map((s, i) => {
+          {qn.sections.map((s, i) => {
             const active = current === i;
             const done = sectionComplete(s, answers);
             return (

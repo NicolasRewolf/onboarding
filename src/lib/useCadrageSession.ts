@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { type ClientInfo } from "./clients";
-import { type Question } from "./questionnaire";
+import { type Question, type Questionnaire } from "./questionnaire";
 import { type Answers, answeredCount, missingEssentials } from "./answers";
 import { aux } from "./fieldTypes";
 import { clearDraft, loadDraft, saveDraft } from "./storage";
@@ -31,7 +31,7 @@ export interface CadrageSession {
  * Toute la logique d'un cadrage en cours, derrière une petite interface — testable
  * sans rendre React. La page n'est plus qu'un adapter de présentation par-dessus.
  */
-export function useCadrageSession(client: ClientInfo): CadrageSession {
+export function useCadrageSession(client: ClientInfo, qn: Questionnaire): CadrageSession {
   const [answers, setAnswers] = useState<Answers>({});
   const [files, setFiles] = useState<Record<string, File[]>>({});
   const [screen, setScreen] = useState<Screen>("intro");
@@ -92,7 +92,7 @@ export function useCadrageSession(client: ClientInfo): CadrageSession {
     setError(null);
     try {
       const { included, skipped } = await prepareAttachments(files);
-      const payload = buildPayload(client, answers, new Date().toLocaleString("fr-FR"), skipped);
+      const payload = buildPayload(qn, client, answers, new Date().toLocaleString("fr-FR"), skipped);
       const res = await submitOnboarding(payload, included);
       if (!res.ok) throw new Error(res.error || "Échec de l'envoi");
       clearDraft(client.slug);
@@ -105,7 +105,7 @@ export function useCadrageSession(client: ClientInfo): CadrageSession {
   }
 
   function downloadReport() {
-    const payload = buildPayload(client, answers, new Date().toLocaleString("fr-FR"));
+    const payload = buildPayload(qn, client, answers, new Date().toLocaleString("fr-FR"));
     const blob = new Blob([payload.reportMarkdown], { type: "text/markdown" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
@@ -120,8 +120,8 @@ export function useCadrageSession(client: ClientInfo): CadrageSession {
     saved,
     submitting,
     error,
-    answered: answeredCount(answers),
-    missing: missingEssentials(answers),
+    answered: answeredCount(qn, answers),
+    missing: missingEssentials(qn, answers),
     set,
     addFiles,
     removeFile,

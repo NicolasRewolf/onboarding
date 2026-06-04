@@ -180,6 +180,39 @@ const LogoField: Renderer = ({ q, answers, files, set, addFiles, removeFile }) =
   );
 };
 
+const FontField: Renderer = ({ q, answers, set }) => {
+  const v = sv(answers[q.id]);
+  return (
+    <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+      {q.fontOptions?.map((f) => {
+        const on = v === f.name;
+        return (
+          <button
+            key={f.name}
+            type="button"
+            aria-pressed={on}
+            onClick={() => set(q.id, on ? "" : f.name)}
+            className={cn(
+              "border-2 border-rw-black p-4 text-left transition-all",
+              on
+                ? "bg-rw-orange/10 shadow-[var(--shadow-hard-sm)] ring-2 ring-rw-orange"
+                : "bg-white hover:translate-x-[1px] hover:translate-y-[1px]",
+            )}
+          >
+            <span className="block text-[26px] leading-tight text-rw-black" style={{ fontFamily: f.stack }}>
+              GMT Bordeaux
+            </span>
+            <span className="mt-1.5 flex items-center gap-1 font-mono text-[11px] uppercase tracking-wider text-rw-muted">
+              {f.name}
+              {on && <Check className="size-3 text-rw-orange" />}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+};
+
 // Registre exhaustif : ajouter un membre à QType force une entrée ici (erreur TS sinon).
 const FIELD_RENDERER: Record<QType, Renderer> = {
   text: TextField,
@@ -193,6 +226,7 @@ const FIELD_RENDERER: Record<QType, Renderer> = {
   multi: MultiField,
   budget: BudgetField,
   logo: LogoField,
+  font: FontField,
 };
 
 export function Field(props: RendererProps) {
