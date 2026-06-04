@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Check, Copy, ExternalLink, Link2 } from "lucide-react";
 import { Wordmark } from "@/components/brand/Wordmark";
 import { Button } from "@/components/ui/button";
-import { KNOWN_CLIENTS } from "@/lib/clients";
+import { KNOWN_CLIENTS } from "@/onboarding/clients";
 import { cn } from "@/lib/utils";
 
 const RESPONSES_REPO = "https://github.com/NicolasRewolf/onboarding-responses";

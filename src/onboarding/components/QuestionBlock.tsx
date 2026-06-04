@@ -1,5 +1,5 @@
-import { type Question } from "@/lib/questionnaire";
-import { type Answers } from "@/lib/answers";
+import { type Question } from "@/onboarding/questionnaire";
+import { type Answers } from "@/onboarding/answers";
 import { Field } from "./Field";
 import { cn } from "@/lib/utils";
 

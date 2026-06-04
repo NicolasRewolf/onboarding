@@ -2,13 +2,13 @@ import { useMemo } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { AlertTriangle, ArrowLeft, ArrowRight, Check, Download, Loader2 } from "lucide-react";
 import { Wordmark } from "@/components/brand/Wordmark";
-import { ProgressRail } from "@/components/onboarding/ProgressRail";
-import { QuestionBlock } from "@/components/onboarding/QuestionBlock";
+import { ProgressRail } from "@/onboarding/components/ProgressRail";
+import { QuestionBlock } from "@/onboarding/components/QuestionBlock";
 import { Button } from "@/components/ui/button";
-import { formatAnswer, isAnswered, sectionAnswered, type Answers } from "@/lib/answers";
-import { resolveQuestionnaire, type Question, type Questionnaire } from "@/lib/questionnaire";
-import { resolveClient, type ClientInfo } from "@/lib/clients";
-import { useCadrageSession } from "@/lib/useCadrageSession";
+import { formatAnswer, isAnswered, sectionAnswered, type Answers } from "@/onboarding/answers";
+import { resolveQuestionnaire, type Question, type Questionnaire } from "@/onboarding/questionnaire";
+import { resolveClient, type ClientInfo } from "@/onboarding/clients";
+import { useCadrageSession } from "@/onboarding/useCadrageSession";
 import { cn } from "@/lib/utils";
 
 export default function Onboarding() {

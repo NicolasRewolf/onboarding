@@ -1,6 +1,6 @@
 import { Check } from "lucide-react";
-import { type Questionnaire } from "@/lib/questionnaire";
-import { answeredCount, sectionComplete, type Answers } from "@/lib/answers";
+import { type Questionnaire } from "@/onboarding/questionnaire";
+import { answeredCount, sectionComplete, type Answers } from "@/onboarding/answers";
 import { cn } from "@/lib/utils";
 
 interface Props {

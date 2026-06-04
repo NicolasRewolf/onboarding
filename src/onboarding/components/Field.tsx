@@ -1,8 +1,8 @@
 import { type ReactNode } from "react";
 import { Check, Paperclip, Upload, X } from "lucide-react";
-import { type Question, type QType } from "@/lib/questionnaire";
-import { type Answers } from "@/lib/answers";
-import { YES, NO, aux } from "@/lib/fieldTypes";
+import { type Question, type QType } from "@/onboarding/questionnaire";
+import { type Answers } from "@/onboarding/answers";
+import { YES, NO, aux } from "@/onboarding/fieldTypes";
 import { cn } from "@/lib/utils";
 
 const INPUT =
