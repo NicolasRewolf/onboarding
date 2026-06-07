@@ -17,16 +17,16 @@ export default function Home() {
       </header>
 
       <main className="flex flex-1 flex-col justify-center px-6 py-20 sm:px-10">
-        <p className="rw-eyebrow text-rw-orange">REWOLF · Cadrage client</p>
+        <p className="rw-eyebrow text-rw-orange">REWOLF · Espace client</p>
         <h1 className="mt-6 max-w-5xl text-[clamp(2.8rem,11vw,8rem)] leading-[0.88]">
-          On vous écoute <span className="text-rw-orange">avant</span> de créer.
+          On cadre, on propose, on <span className="text-rw-orange">crée</span>.
         </h1>
         <p className="mt-8 max-w-xl text-[16px] leading-relaxed text-rw-white/70">
-          Cet espace héberge les questionnaires de cadrage REWOLF. Chaque projet démarre par une vraie conversation —
-          structurée, pour ne rien oublier et viser juste dès la première piste.
+          Cet espace réunit les supports REWOLF faits pour vous : questionnaires de cadrage, présentations
+          d'offres, et tout ce qui aide un projet à bien démarrer. Chacun s'ouvre depuis un lien personnel.
         </p>
         <p className="mt-10 font-mono text-[12px] text-rw-white/40">
-          Vous avez reçu un lien personnel ? Ouvrez-le pour commencer votre cadrage.
+          Vous avez reçu un lien personnel ? Ouvrez-le pour commencer.
         </p>
       </main>
 
