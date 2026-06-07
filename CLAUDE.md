@@ -45,9 +45,12 @@ Vocabulaire & seams de la feature questionnaire : **`CONTEXT.md`**. Mise en rout
 4. Nouveau type de champ ? l'ajouter aux DEUX registres exhaustifs : `QType` + `FIELD_VALUE` (`fieldTypes.ts`) et `FIELD_RENDERER` (`components/Field.tsx`) ; police → famille dans `index.html`.
 5. `build` + preview (sans régresser l'existant) + `push`.
 
-## Collaboration (Nicolas & Élise)
+## Deux usages, une même app
 
-Plusieurs auteurs poussent sur `main` (même app, même domaine). Changements **additifs** — un nouveau support = de nouveaux fichiers (idéalement sa propre feature + sa route), pas une refonte de l'existant. Commits petits et ciblés. **Ne jamais régresser** les supports en ligne (`/c/derieux`, `/c/gmt`). Dans le doute, preview avant push.
+- **Nicolas — onboarding clients** : questionnaires de cadrage (`/c/<slug>`, feature `src/onboarding/`).
+- **Élise — prospection** : plaquettes / présentations d'offres (p. ex. `/offre-starter`, feature `src/offres/`).
+
+Même base, **features séparées**. Plusieurs auteurs poussent sur `main` : changements **additifs** (un support = de nouveaux fichiers, sa propre feature + sa route — pas de refonte de l'existant), commits petits et ciblés, et **ne jamais régresser** les supports en ligne (`/c/derieux`, `/c/gmt`). Dans le doute, preview avant push.
 
 ## Invariants (à ne pas casser)
 
