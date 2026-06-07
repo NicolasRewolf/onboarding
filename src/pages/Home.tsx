@@ -19,11 +19,11 @@ export default function Home() {
       <main className="flex flex-1 flex-col justify-center px-6 py-20 sm:px-10">
         <p className="rw-eyebrow text-rw-orange">REWOLF · Espace client</p>
         <h1 className="mt-6 max-w-5xl text-[clamp(2.8rem,11vw,8rem)] leading-[0.88]">
-          On cadre, on propose, on <span className="text-rw-orange">crée</span>.
+          Bienvenue dans le back de la <span className="text-rw-orange">tanière</span>.
         </h1>
         <p className="mt-8 max-w-xl text-[16px] leading-relaxed text-rw-white/70">
-          Cet espace réunit les supports REWOLF faits pour vous : questionnaires de cadrage, présentations
-          d'offres, et tout ce qui aide un projet à bien démarrer. Chacun s'ouvre depuis un lien personnel.
+          Ici, on cadre, on propose, on crée. C'est l'atelier où vivent les supports clients REWOLF —
+          questionnaires de cadrage, présentations d'offres… — chacun derrière son lien personnel.
         </p>
         <p className="mt-10 font-mono text-[12px] text-rw-white/40">
           Vous avez reçu un lien personnel ? Ouvrez-le pour commencer.
