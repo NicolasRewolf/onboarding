@@ -15,7 +15,7 @@ Vocabulaire & seams de la feature questionnaire : **`CONTEXT.md`**. Mise en rout
 - **GitHub**
   - `NicolasRewolf/onboarding` (ce dépôt, public) — **le code**. Tout le dev se fait ici.
   - `NicolasRewolf/onboarding-responses` (privé) — **les réponses** des supports qui collectent des données (les questionnaires). Écrit par la fonction serverless, jamais à la main. Confidentiel.
-- **Vercel** — le projet est connecté à ce dépôt : **`git push` sur `main` ⇒ déploiement auto en prod**. Domaine `onboarding.rewolf.studio`. Les secrets (`GITHUB_TOKEN`…) sont gérés côté Vercel par Nicolas — pas besoin d'y toucher pour déployer.
+- **Vercel** — le projet est connecté à ce dépôt : **`git push` sur `main` ⇒ déploiement auto en prod**. Domaine `onboarding.rewolf.studio`. `vercel.json` réécrit **toutes** les routes vers `index.html` (deep-links SPA : ouvrir/recharger n'importe quelle URL marche) — ne pas casser cette règle. Les secrets (`GITHUB_TOKEN`…) sont gérés côté Vercel par Nicolas — pas besoin d'y toucher pour déployer.
 - **Routing** — `src/App.tsx` (React Router) : `/` (accueil), `/c/:slug` (questionnaire client), `/admin` (générateur de liens). Ajouter un support = ajouter une route ici + une page.
 
 ## Structure
@@ -29,11 +29,14 @@ Vocabulaire & seams de la feature questionnaire : **`CONTEXT.md`**. Mise en rout
 
 ## Ajouter un support
 
-**A. Un autre type de support (ex. présentation d'offre)** — garder le réflexe « une feature = un dossier » :
-1. Nouveau dossier de feature `src/<feature>/` (p. ex. `src/offres/`), isolé comme `src/onboarding/`.
-2. Une page `src/pages/<Nom>.tsx` qui réutilise la DA (composants `brand`/`ui`, tokens) — **pas besoin** du flux questionnaire / `api/submit` / dépôt des réponses si le support ne collecte rien.
-3. Une route dans `src/App.tsx` (p. ex. `/o/:slug`).
-4. `npm run build`, vérifier en preview, `git push` sur `main`.
+**A. Une plaquette / présentation d'offre (le cas d'Élise)** — page interactive autonome, sans collecte :
+1. Nouveau dossier de feature `src/offres/` (une feature = un dossier, comme `src/onboarding/`) : la page + ses composants (sections, **calculateur** = simple état React, etc.). Pleine latitude créative.
+2. La page réutilise la DA REWOLF (composants `brand`/`ui`, tokens `globals.css`) — **pas besoin** du flux questionnaire / `api/submit` / dépôt des réponses : une plaquette ne collecte rien (calculs côté client).
+3. **Déclarer la route** dans `src/App.tsx`, **au-dessus** du catch-all `path="*"` (sinon → redirigé vers `/`). En clair, p. ex. `/offre-starter`, `/offre-signature` (une route par offre) ou `/offre/:slug` (une page paramétrée).
+4. Les **deep-links marchent déjà** (cf. `vercel.json`) : ouvrir/recharger `onboarding.rewolf.studio/offre-starter` fonctionne.
+5. `npm run build`, vérifier en preview, `git push` sur `main`.
+
+> Si une plaquette doit un jour *envoyer* quelque chose (lead, prise de RDV…), ne pas détourner `api/submit` (réservé au questionnaire) : prévoir une nouvelle fonction autonome dans `/api`.
 
 **B. Un nouveau questionnaire** (réutiliser la feature existante) :
 1. `src/onboarding/questionnaire/<nom>.ts` → `export const <NOM>_RAW: RawSection[]` (s'inspirer de `horloger.ts`).
