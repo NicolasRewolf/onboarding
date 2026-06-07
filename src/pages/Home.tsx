@@ -1,18 +1,10 @@
-import { ArrowUpRight } from "lucide-react";
-import { Link } from "react-router-dom";
 import { Wordmark } from "@/components/brand/Wordmark";
 
 export default function Home() {
   return (
     <div className="flex min-h-dvh flex-col bg-rw-black text-rw-white">
-      <header className="flex items-center justify-between px-6 py-6 sm:px-10">
+      <header className="flex items-center px-6 py-6 sm:px-10">
         <Wordmark className="h-5 text-rw-orange" />
-        <Link
-          to="/admin"
-          className="flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider text-rw-white/60 transition-colors hover:text-rw-orange"
-        >
-          Espace studio <ArrowUpRight className="size-3.5" />
-        </Link>
       </header>
 
       <main className="flex flex-1 flex-col justify-center px-6 py-20 sm:px-10">
