@@ -26,7 +26,8 @@ npm run dev      # http://localhost:5173
 
 - **À la volée** (sans redéploiement) : `/c/<slug>?n=Nom%20du%20client&t=Titre&p=Projet`
   → ou utilise `/admin` qui construit le lien pour toi.
-- **Client stable** : ajoute une entrée dans [`src/clients.ts`](src/lib/clients.ts).
+- **Client stable** : ajoute une entrée dans [`src/onboarding/clients.ts`](src/onboarding/clients.ts).
+- **Nouveau questionnaire** : recette pas-à-pas dans [`CLAUDE.md`](CLAUDE.md) (« Ajouter un nouvel onboarding »).
 
 ## Stockage des réponses
 
