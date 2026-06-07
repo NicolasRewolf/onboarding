@@ -4,6 +4,8 @@ App de **supports clients** REWOLF sur `onboarding.rewolf.studio` — questionna
 aujourd'hui, autres supports (p. ex. présentations d'offres) demain. Briques & DA partagées,
 une feature = un dossier. Orientation complète pour reprendre le projet : [`CLAUDE.md`](CLAUDE.md).
 
+> 👋 **Nouvelle/nouveau dans l'équipe ?** Démarre ici → [`GETTING-STARTED.md`](GETTING-STARTED.md) (GitHub ↔ Claude Code ↔ mise en ligne).
+
 Le support « questionnaire » : un prospect ouvre son lien → remplit un questionnaire soigné aux
 couleurs REWOLF → à la validation, son **rapport Markdown** atterrit dans un dépôt GitHub privé
 (et une issue te notifie). Tu lis, tu fais ton devis.
