@@ -17,9 +17,8 @@ Aucune base de données : le stockage, c'est GitHub.
 
 | Route | Rôle |
 |-------|------|
-| `/` | Page d'accueil REWOLF |
+| `/` | Vitrine interne (« back ») — `noindex`, lien vers rewolf.studio |
 | `/c/:slug` | Onboarding d'un client (ex. `/c/derieux`) |
-| `/admin` | Générateur de liens (aucune donnée sensible) |
 
 ## Lancer en local
 
@@ -30,8 +29,7 @@ npm run dev      # http://localhost:5173
 
 ## Ajouter un client
 
-- **À la volée** (sans redéploiement) : `/c/<slug>?n=Nom%20du%20client&t=Titre&p=Projet`
-  → ou utilise `/admin` qui construit le lien pour toi.
+- **À la volée** (sans redéploiement) : `/c/<slug>?n=Nom%20du%20client&t=Titre&q=<questionnaire>`
 - **Client stable** : ajoute une entrée dans [`src/onboarding/clients.ts`](src/onboarding/clients.ts).
 - **Nouveau questionnaire** : recette pas-à-pas dans [`CLAUDE.md`](CLAUDE.md) (« Ajouter un nouvel onboarding »).
 

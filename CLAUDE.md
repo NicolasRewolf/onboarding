@@ -16,7 +16,7 @@ Vocabulaire & seams de la feature questionnaire : **`CONTEXT.md`**. Mise en rout
   - `NicolasRewolf/onboarding` (ce dépôt, public) — **le code**. Tout le dev se fait ici.
   - `NicolasRewolf/onboarding-responses` (privé) — **les réponses** des supports qui collectent des données (les questionnaires). Écrit par la fonction serverless, jamais à la main. Confidentiel.
 - **Vercel** — le projet est connecté à ce dépôt : **`git push` sur `main` ⇒ déploiement auto en prod**. Domaine `onboarding.rewolf.studio`. `vercel.json` réécrit **toutes** les routes vers `index.html` (deep-links SPA : ouvrir/recharger n'importe quelle URL marche) — ne pas casser cette règle. Les secrets (`GITHUB_TOKEN`…) sont gérés côté Vercel par Nicolas — pas besoin d'y toucher pour déployer.
-- **Routing** — `src/App.tsx` (React Router) : `/` (accueil), `/c/:slug` (questionnaire client), `/admin` (générateur de liens). Ajouter un support = ajouter une route ici + une page.
+- **Routing** — `src/App.tsx` (React Router). `/` = page **back / interne** (`noindex`, simple vitrine avec un lien vers rewolf.studio — **pas** une page publique) ; `/c/:slug` = questionnaire client. Les pages **publiques** sont les routes spécifiques (questionnaires, plaquettes d'offres type `/tarif`…). Ajouter un support = une route ici + une page.
 
 ## Structure
 
