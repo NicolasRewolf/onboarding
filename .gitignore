@@ -41,3 +41,6 @@ pnpm-debug.log*
 
 # TypeScript
 *.tsbuildinfo
+
+# Local Claude tooling (preview/launch config — not part of the project)
+.claude/
