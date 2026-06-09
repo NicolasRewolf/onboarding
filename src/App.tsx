@@ -10,7 +10,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/c/:slug" element={<Onboarding />} />
-        <Route path="/offre-starter" element={<OffreStarter />} />
+        <Route path="/forfaits-flash" element={<OffreStarter />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

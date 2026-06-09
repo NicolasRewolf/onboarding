@@ -737,7 +737,7 @@ function Footer() {
     <footer className="bg-rw-white px-5 py-6 sm:px-8">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 font-mono text-[11px] uppercase tracking-wider text-rw-muted">
         <span>REWOLF Studio · 2025</span>
-        <span>onboarding.rewolf.studio/offre-starter</span>
+        <span>onboarding.rewolf.studio/forfaits-flash</span>
       </div>
     </footer>
   );
