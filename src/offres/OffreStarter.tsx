@@ -4,6 +4,7 @@ import {
   ArrowRight,
   ArrowUpRight,
   Check,
+  Loader2,
   Mail,
   PackageCheck,
   Phone,
@@ -588,10 +589,9 @@ function DevisBuilder() {
 }
 
 /**
- * Dialog qui s'ouvre au clic sur « Envoyer ce devis » — propose 3 moyens
- * d'envoyer le mail prêt-à-l'emploi : appli mail (mailto), Gmail web, ou copier-coller.
- * Couvre tous les cas : utilisateurs sans client mail configuré, Gmail web,
- * mobile sans appli, etc.
+ * Dialog d'envoi du devis — formulaire prospect (nom, prénom, entreprise, e-mail,
+ * tel + précisions facultatifs). À la soumission, POSTe vers /api/forfaits-flash-lead
+ * qui écrit dans le dépôt privé GitHub et ouvre une issue de notification.
  */
 function SendDevisDialog({
   forfait,
@@ -604,27 +604,20 @@ function SendDevisDialog({
   total: number;
   onClose: () => void;
 }) {
-  const subject = forfait ? `Demande de devis, forfait ${forfait.name}` : "Demande de devis sur-mesure";
-  const body = devisMailBody(forfait, picked, total);
-  const mailto = `mailto:${CONTACT.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(CONTACT.email)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  const fullCopy = `À : ${CONTACT.email}\nObjet : ${subject}\n\n${body}`;
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [company, setCompany] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [notes, setNotes] = useState("");
+  const [status, setStatus] = useState<
+    { kind: "idle" } | { kind: "sending" } | { kind: "success" } | { kind: "error"; message: string }
+  >({ kind: "idle" });
 
-  const [copied, setCopied] = useState<"email" | "message" | null>(null);
-  const copy = async (text: string, kind: "email" | "message") => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(kind);
-      setTimeout(() => setCopied(null), 1800);
-    } catch {
-      /* clipboard refusé — l'utilisateur peut toujours sélectionner manuellement */
-    }
-  };
-
-  // Fermeture à la touche Échap
+  // Fermeture à la touche Échap + blocage scroll body
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape" && status.kind !== "sending") onClose();
     };
     window.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
@@ -632,109 +625,220 @@ function SendDevisDialog({
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
     };
-  }, [onClose]);
+  }, [onClose, status.kind]);
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (status.kind === "sending") return;
+    setStatus({ kind: "sending" });
+
+    const extras = EXTRAS.filter((x) => picked.has(x.id)).map((x) => ({ name: x.name, price: x.price }));
+    const payload = {
+      firstName,
+      lastName,
+      company,
+      email,
+      phone,
+      notes,
+      devis: {
+        forfait: forfait?.name ?? null,
+        forfaitPrice: forfait?.price,
+        extras,
+        total,
+      },
+    };
+
+    try {
+      const r = await fetch("/api/forfaits-flash-lead", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!r.ok) {
+        const j = (await r.json().catch(() => ({}))) as { error?: string };
+        throw new Error(j.error || `Erreur ${r.status}`);
+      }
+      setStatus({ kind: "success" });
+    } catch (err) {
+      setStatus({
+        kind: "error",
+        message: err instanceof Error ? err.message : "Envoi impossible",
+      });
+    }
+  };
 
   return (
     <div
       role="dialog"
       aria-modal="true"
       aria-labelledby="send-devis-title"
-      className="fixed inset-0 z-50 grid place-items-center bg-rw-black/60 p-4 sm:p-6"
-      onClick={onClose}
+      className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-rw-black/60 p-4 sm:p-6"
+      onClick={status.kind === "sending" ? undefined : onClose}
     >
       <div
-        className="relative w-full max-w-lg border-2 border-rw-black bg-rw-white p-6 shadow-[var(--shadow-hard)] sm:p-8"
+        className="relative my-4 w-full max-w-xl border-2 border-rw-black bg-rw-white p-6 shadow-[var(--shadow-hard)] sm:p-8"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           type="button"
           onClick={onClose}
+          disabled={status.kind === "sending"}
           aria-label="Fermer"
-          className="absolute right-3 top-3 grid size-9 place-items-center text-rw-muted transition-colors hover:bg-rw-paper-subtle hover:text-rw-black"
+          className="absolute right-3 top-3 grid size-9 place-items-center text-rw-muted transition-colors hover:bg-rw-paper-subtle hover:text-rw-black disabled:opacity-30"
         >
           <X className="size-4" />
         </button>
 
-        <p className="rw-eyebrow text-rw-orange">Envoyer le devis</p>
-        <h3 id="send-devis-title" className="mt-2 text-2xl">
-          Choisissez votre méthode
-        </h3>
-        <p className="mt-3 text-[14px] leading-relaxed text-rw-muted">
-          Le mail est déjà rédigé pour vous. Ouvrez-le dans votre appli, dans Gmail, ou copiez-le pour l'envoyer
-          depuis n'importe où.
-        </p>
-
-        <div className="mt-6 grid gap-3">
-          <Button variant="rw" size="lg" asChild>
-            <a href={mailto} onClick={onClose}>
-              <Mail className="size-5" /> Ouvrir dans mon appli mail
-            </a>
-          </Button>
-          <Button variant="rwOutline" size="lg" asChild>
-            <a href={gmail} target="_blank" rel="noreferrer" onClick={onClose}>
-              <ArrowUpRight className="size-5" /> Ouvrir dans Gmail
-            </a>
-          </Button>
-        </div>
-
-        <div className="mt-7 border-t-2 border-rw-black/10 pt-5">
-          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-rw-muted">Ou copier le mail prêt-à-envoyer</p>
-
-          <div className="mt-3 space-y-2.5">
-            <div className="flex items-center justify-between gap-3 border-2 border-rw-black bg-rw-paper-subtle p-3">
-              <div className="min-w-0 flex-1">
-                <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-rw-muted">Destinataire</p>
-                <p className="mt-0.5 truncate text-[13px] font-bold">{CONTACT.email}</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => copy(CONTACT.email, "email")}
-                className="shrink-0 border-2 border-rw-black bg-rw-white px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider transition-colors hover:bg-rw-black hover:text-rw-white"
-              >
-                {copied === "email" ? "Copié !" : "Copier"}
-              </button>
+        {status.kind === "success" ? (
+          <div className="py-6 text-center">
+            <div className="mx-auto grid size-14 place-items-center border-2 border-rw-black bg-rw-orange shadow-[var(--shadow-hard-sm)]">
+              <Check className="size-7 text-rw-black" strokeWidth={3} />
             </div>
-
-            <div className="border-2 border-rw-black bg-rw-paper-subtle p-3">
-              <div className="flex items-center justify-between gap-3">
-                <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-rw-muted">
-                  Objet + message
-                </p>
-                <button
-                  type="button"
-                  onClick={() => copy(fullCopy, "message")}
-                  className="shrink-0 border-2 border-rw-black bg-rw-white px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider transition-colors hover:bg-rw-black hover:text-rw-white"
-                >
-                  {copied === "message" ? "Copié !" : "Copier"}
-                </button>
-              </div>
-              <pre className="mt-2 max-h-32 overflow-y-auto whitespace-pre-wrap font-mono text-[11px] leading-relaxed text-rw-muted">
-{`Objet : ${subject}
-
-${body}`}
-              </pre>
-            </div>
+            <h3 id="send-devis-title" className="mt-6 text-2xl">
+              Demande envoyée !
+            </h3>
+            <p className="mx-auto mt-3 max-w-sm text-[14.5px] leading-relaxed text-rw-muted">
+              On a bien reçu votre demande, on revient vers vous très vite par e-mail.
+            </p>
+            <Button variant="rwOutline" onClick={onClose} className="mt-7">
+              Fermer
+            </Button>
           </div>
-        </div>
+        ) : (
+          <>
+            <p className="rw-eyebrow text-rw-orange">Demande de devis</p>
+            <h3 id="send-devis-title" className="mt-2 text-2xl">
+              Vos coordonnées
+            </h3>
+            <p className="mt-2 text-[14px] leading-relaxed text-rw-muted">
+              On vous recontacte sous 48 h avec une proposition adaptée. Le récap de votre sélection est joint
+              automatiquement.
+            </p>
+
+            <form onSubmit={onSubmit} className="mt-6 grid gap-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Prénom" required value={firstName} onChange={setFirstName} autoComplete="given-name" />
+                <Field label="Nom" required value={lastName} onChange={setLastName} autoComplete="family-name" />
+              </div>
+              <Field label="Entreprise" required value={company} onChange={setCompany} autoComplete="organization" />
+              <Field label="E-mail" required type="email" value={email} onChange={setEmail} autoComplete="email" />
+              <Field
+                label="Téléphone"
+                hint="facultatif"
+                type="tel"
+                value={phone}
+                onChange={setPhone}
+                autoComplete="tel"
+              />
+              <Field
+                label="Précisions sur le besoin"
+                hint="facultatif"
+                value={notes}
+                onChange={setNotes}
+                multiline
+              />
+
+              {/* Récap du devis joint automatiquement */}
+              {(forfait || picked.size > 0) && (
+                <div className="border-2 border-rw-black bg-rw-paper-subtle p-3.5 font-mono text-[11px]">
+                  <p className="text-[10px] uppercase tracking-[0.22em] text-rw-muted">
+                    Joint à la demande
+                  </p>
+                  <ul className="mt-2 space-y-1 text-rw-black">
+                    {forfait && <li>· Forfait {forfait.name} — {formatPrice(forfait.price)} € TTC</li>}
+                    {EXTRAS.filter((x) => picked.has(x.id)).map((x) => (
+                      <li key={x.id}>· {x.name} — {x.priceLabel}</li>
+                    ))}
+                    <li className="mt-1 border-t border-rw-black/15 pt-1 font-bold">
+                      Total estimé · {formatPrice(total)} € TTC
+                    </li>
+                  </ul>
+                </div>
+              )}
+
+              {status.kind === "error" && (
+                <p className="border-2 border-rw-danger bg-rw-danger/5 px-3 py-2 text-[13px] text-rw-danger">
+                  L'envoi a échoué : {status.message}. Réessayez, ou écrivez-nous directement à {CONTACT.email}.
+                </p>
+              )}
+
+              <Button
+                type="submit"
+                variant="rw"
+                size="lg"
+                disabled={status.kind === "sending"}
+                className="mt-2 w-full"
+              >
+                {status.kind === "sending" ? (
+                  <>
+                    <Loader2 className="size-5 animate-spin" /> Envoi en cours…
+                  </>
+                ) : (
+                  <>
+                    Envoyer ma demande <ArrowRight className="size-5" />
+                  </>
+                )}
+              </Button>
+              <p className="text-center font-mono text-[10px] uppercase tracking-[0.22em] text-rw-tertiary">
+                Vos données restent privées · jamais partagées
+              </p>
+            </form>
+          </>
+        )}
       </div>
     </div>
   );
 }
 
-function devisMailBody(forfait: Forfait | null, picked: Set<string>, total: number): string {
-  const lines = ["Bonjour,", ""];
-  if (forfait) {
-    lines.push(`Je souhaite un devis pour le forfait ${forfait.name} (${formatPrice(forfait.price)} € TTC).`);
-  } else {
-    lines.push("Je souhaite un devis sur-mesure.");
-  }
-  const extras = EXTRAS.filter((e) => picked.has(e.id));
-  if (extras.length) {
-    lines.push("Extras souhaités :");
-    extras.forEach((e) => lines.push(`  · ${e.name} · ${e.priceLabel}`));
-  }
-  lines.push("", `Total estimé : ${formatPrice(total)} € TTC.`, "", "À très vite,");
-  return lines.join("\n");
+/** Champ de formulaire DA REWOLF — label + input/textarea bordé noir. */
+function Field({
+  label,
+  hint,
+  value,
+  onChange,
+  required,
+  type = "text",
+  multiline,
+  autoComplete,
+}: {
+  label: string;
+  hint?: string;
+  value: string;
+  onChange: (v: string) => void;
+  required?: boolean;
+  type?: string;
+  multiline?: boolean;
+  autoComplete?: string;
+}) {
+  const common =
+    "w-full border-2 border-rw-black bg-rw-white px-3 py-2.5 text-[14px] outline-none transition-colors placeholder:text-rw-tertiary focus:border-rw-orange";
+  return (
+    <label className="block">
+      <span className="mb-1.5 flex items-baseline justify-between gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-rw-muted">
+        <span>{label}{required && <span className="text-rw-orange"> *</span>}</span>
+        {hint && <span className="text-rw-tertiary normal-case tracking-normal">{hint}</span>}
+      </span>
+      {multiline ? (
+        <textarea
+          required={required}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          rows={3}
+          autoComplete={autoComplete}
+          className={cn(common, "resize-y")}
+        />
+      ) : (
+        <input
+          required={required}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          type={type}
+          autoComplete={autoComplete}
+          className={common}
+        />
+      )}
+    </label>
+  );
 }
 
 /* ─────────────────────────── Process ─────────────────────────── */
