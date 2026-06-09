@@ -103,28 +103,28 @@ export const EXTRAS: Extra[] = [
     id: "shooting",
     name: "Shooting de marque",
     price: 600,
-    priceLabel: "600 € HT",
+    priceLabel: "600 € TTC",
     detail: "Demi-journée · DA · retouche",
   },
   {
     id: "small",
     name: "Graphisme Small",
     price: 300,
-    priceLabel: "300 € HT",
+    priceLabel: "300 € TTC",
     detail: "Carte de visite, sticker, étiquette",
   },
   {
     id: "medium",
     name: "Graphisme Medium",
     price: 500,
-    priceLabel: "500 € HT",
+    priceLabel: "500 € TTC",
     detail: "Flyer, kit Instagram, menu",
   },
   {
     id: "big",
     name: "Graphisme Big",
     price: 1400,
-    priceLabel: "à partir de 1 400 € HT",
+    priceLabel: "à partir de 1 400 € TTC",
     detail: "Packaging, livrets, présentations",
   },
 ];
@@ -145,17 +145,16 @@ export const COMPARATIF: { label: string; origine: boolean; signature: boolean }
 ];
 
 export const PROCESS: { n: string; title: string; detail: string; tag?: string }[] = [
-  { n: "01", title: "Contact", detail: "Par e-mail ou via le formulaire sur rewolf.studio" },
+  { n: "01", title: "Contact", detail: "Par e-mail ou via le formulaire juste au dessus" },
   { n: "02", title: "Appel découverte", detail: "30 min pour comprendre vos besoins et valider la formule" },
   {
     n: "03",
     title: "Questionnaire de brief",
     detail:
-      "Vous remplissez un questionnaire détaillé sur votre marque et vos objectifs — le fondement de toute la mission",
-    tag: "Nouveau",
+      "Vous remplissez un questionnaire détaillé sur votre marque et vos objectifs. Le fondement de toute la mission.",
   },
   { n: "04", title: "Devis & lancement", detail: "Devis confirmé + acompte de 50 % pour démarrer" },
-  { n: "05", title: "Création & révisions", detail: "2 rounds de révisions inclus. Au-delà : facturation au temps passé." },
+  { n: "05", title: "Création & révisions", detail: "On avance, on créé, et on révise jusqu'à 2 fois si besoin" },
   { n: "06", title: "Livraison", detail: "Livrables organisés, nommés, prêts à l'emploi immédiatement" },
 ];
 
@@ -165,10 +164,35 @@ export const PROCESS: { n: string; title: string; detail: string; tag?: string }
  * un visuel carré ou portrait pour chaque projet. Si le fichier manque,
  * un fond beige clair s'affiche en fallback (DA REWOLF).
  */
-export const PORTFOLIO: { slug: string; name: string; tag: string; detail: string }[] = [
-  { slug: "la-princiere", name: "La Princière", tag: "Food", detail: "Identité restaurant indépendant" },
-  { slug: "etche-verde", name: "Etche Verde", tag: "Bien-être", detail: "Branding acteur du naturel" },
-  { slug: "yamas", name: "Yamas", tag: "Food", detail: "Identité restaurant méditerranéen" },
+export const PORTFOLIO: { slug: string; name: string; tag: string; detail: string; url: string }[] = [
+  {
+    slug: "la-ferme-medicale",
+    name: "La Ferme Médicale",
+    tag: "Santé",
+    detail: "Identité maison de santé",
+    url: "https://www.rewolf.studio/projets/la-ferme-m%C3%A9dicale",
+  },
+  {
+    slug: "chaff",
+    name: "Chaff",
+    tag: "Lifestyle",
+    detail: "Branding lifestyle",
+    url: "https://www.rewolf.studio/projets/chaff",
+  },
+  {
+    slug: "yamas",
+    name: "Yamas",
+    tag: "Food",
+    detail: "Identité restaurant méditerranéen",
+    url: "https://www.rewolf.studio/projets/yamas",
+  },
+  {
+    slug: "la-princiere",
+    name: "La Princière",
+    tag: "Food",
+    detail: "Identité restaurant indépendant",
+    url: "https://www.rewolf.studio/projets/la-princi%C3%A8re",
+  },
 ];
 
 export const CONTACT = {
