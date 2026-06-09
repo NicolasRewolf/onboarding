@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -426,6 +426,7 @@ function Tick({ on }: { on: boolean }) {
 function DevisBuilder() {
   const [forfaitId, setForfaitId] = useState<Forfait["id"] | null>(null);
   const [picked, setPicked] = useState<Set<string>>(new Set());
+  const [sendOpen, setSendOpen] = useState(false);
   const forfait = FORFAITS.find((f) => f.id === forfaitId) ?? null;
   const extrasTotal = EXTRAS.filter((e) => picked.has(e.id)).reduce((s, e) => s + e.price, 0);
   const total = (forfait?.price ?? 0) + extrasTotal;
@@ -557,23 +558,166 @@ function DevisBuilder() {
                 </span>
               </div>
 
-              <Button variant="rw" size="lg" asChild className={cn("mt-6 w-full", !hasSelection && "pointer-events-none opacity-40")}>
-                <a
-                  href={`mailto:${CONTACT.email}?subject=${encodeURIComponent(
-                    forfait ? `Demande de devis, forfait ${forfait.name}` : "Demande de devis sur-mesure",
-                  )}&body=${encodeURIComponent(devisMailBody(forfait, picked, total))}`}
-                >
-                  Envoyer ce devis <ArrowRight className="size-5" />
-                </a>
+              <Button
+                variant="rw"
+                size="lg"
+                onClick={() => setSendOpen(true)}
+                disabled={!hasSelection}
+                className="mt-6 w-full"
+              >
+                Envoyer ce devis <ArrowRight className="size-5" />
               </Button>
               <p className="mt-3 text-center font-mono text-[10px] uppercase tracking-[0.22em] text-rw-tertiary">
                 Estimation indicative · ajusté après l'appel
               </p>
             </div>
           </aside>
+
+          {sendOpen && (
+            <SendDevisDialog
+              forfait={forfait}
+              picked={picked}
+              total={total}
+              onClose={() => setSendOpen(false)}
+            />
+          )}
         </div>
       </div>
     </section>
+  );
+}
+
+/**
+ * Dialog qui s'ouvre au clic sur « Envoyer ce devis » — propose 3 moyens
+ * d'envoyer le mail prêt-à-l'emploi : appli mail (mailto), Gmail web, ou copier-coller.
+ * Couvre tous les cas : utilisateurs sans client mail configuré, Gmail web,
+ * mobile sans appli, etc.
+ */
+function SendDevisDialog({
+  forfait,
+  picked,
+  total,
+  onClose,
+}: {
+  forfait: Forfait | null;
+  picked: Set<string>;
+  total: number;
+  onClose: () => void;
+}) {
+  const subject = forfait ? `Demande de devis, forfait ${forfait.name}` : "Demande de devis sur-mesure";
+  const body = devisMailBody(forfait, picked, total);
+  const mailto = `mailto:${CONTACT.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(CONTACT.email)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  const fullCopy = `À : ${CONTACT.email}\nObjet : ${subject}\n\n${body}`;
+
+  const [copied, setCopied] = useState<"email" | "message" | null>(null);
+  const copy = async (text: string, kind: "email" | "message") => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(kind);
+      setTimeout(() => setCopied(null), 1800);
+    } catch {
+      /* clipboard refusé — l'utilisateur peut toujours sélectionner manuellement */
+    }
+  };
+
+  // Fermeture à la touche Échap
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="send-devis-title"
+      className="fixed inset-0 z-50 grid place-items-center bg-rw-black/60 p-4 sm:p-6"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-lg border-2 border-rw-black bg-rw-white p-6 shadow-[var(--shadow-hard)] sm:p-8"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Fermer"
+          className="absolute right-3 top-3 grid size-9 place-items-center text-rw-muted transition-colors hover:bg-rw-paper-subtle hover:text-rw-black"
+        >
+          <X className="size-4" />
+        </button>
+
+        <p className="rw-eyebrow text-rw-orange">Envoyer le devis</p>
+        <h3 id="send-devis-title" className="mt-2 text-2xl">
+          Choisissez votre méthode
+        </h3>
+        <p className="mt-3 text-[14px] leading-relaxed text-rw-muted">
+          Le mail est déjà rédigé pour vous. Ouvrez-le dans votre appli, dans Gmail, ou copiez-le pour l'envoyer
+          depuis n'importe où.
+        </p>
+
+        <div className="mt-6 grid gap-3">
+          <Button variant="rw" size="lg" asChild>
+            <a href={mailto} onClick={onClose}>
+              <Mail className="size-5" /> Ouvrir dans mon appli mail
+            </a>
+          </Button>
+          <Button variant="rwOutline" size="lg" asChild>
+            <a href={gmail} target="_blank" rel="noreferrer" onClick={onClose}>
+              <ArrowUpRight className="size-5" /> Ouvrir dans Gmail
+            </a>
+          </Button>
+        </div>
+
+        <div className="mt-7 border-t-2 border-rw-black/10 pt-5">
+          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-rw-muted">Ou copier le mail prêt-à-envoyer</p>
+
+          <div className="mt-3 space-y-2.5">
+            <div className="flex items-center justify-between gap-3 border-2 border-rw-black bg-rw-paper-subtle p-3">
+              <div className="min-w-0 flex-1">
+                <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-rw-muted">Destinataire</p>
+                <p className="mt-0.5 truncate text-[13px] font-bold">{CONTACT.email}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => copy(CONTACT.email, "email")}
+                className="shrink-0 border-2 border-rw-black bg-rw-white px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider transition-colors hover:bg-rw-black hover:text-rw-white"
+              >
+                {copied === "email" ? "Copié !" : "Copier"}
+              </button>
+            </div>
+
+            <div className="border-2 border-rw-black bg-rw-paper-subtle p-3">
+              <div className="flex items-center justify-between gap-3">
+                <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-rw-muted">
+                  Objet + message
+                </p>
+                <button
+                  type="button"
+                  onClick={() => copy(fullCopy, "message")}
+                  className="shrink-0 border-2 border-rw-black bg-rw-white px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider transition-colors hover:bg-rw-black hover:text-rw-white"
+                >
+                  {copied === "message" ? "Copié !" : "Copier"}
+                </button>
+              </div>
+              <pre className="mt-2 max-h-32 overflow-y-auto whitespace-pre-wrap font-mono text-[11px] leading-relaxed text-rw-muted">
+{`Objet : ${subject}
+
+${body}`}
+              </pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
