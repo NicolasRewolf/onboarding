@@ -25,6 +25,7 @@ import {
   formatPrice,
   type Forfait,
 } from "./data";
+import { cookedContext, trackEvent } from "@/tracking/cooked";
 
 const NAV: { id: string; label: string }[] = [
   { id: "approche", label: "Approche" },
@@ -646,6 +647,7 @@ function SendDevisDialog({
         extras,
         total,
       },
+      attribution: cookedContext(),
     };
 
     try {
@@ -659,6 +661,8 @@ function SendDevisDialog({
         throw new Error(j.error || `Erreur ${r.status}`);
       }
       setStatus({ kind: "success" });
+      // Conversion cooked (signal client ; l'enregistrement serveur reste la source de vérité).
+      trackEvent("form_submit", { forfait: forfait?.name ?? null, total }, true);
     } catch (err) {
       setStatus({
         kind: "error",

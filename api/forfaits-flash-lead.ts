@@ -31,6 +31,23 @@ const ExtraSchema = z.object({
   price: z.number().nonnegative(),
 });
 
+/** Attribution cooked (cf. src/tracking/cooked.ts) — jointe à la conversion. */
+const AttributionSchema = z.object({
+  utm_source: z.string().max(200).nullable().optional(),
+  utm_medium: z.string().max(200).nullable().optional(),
+  utm_campaign: z.string().max(200).nullable().optional(),
+  utm_term: z.string().max(200).nullable().optional(),
+  utm_content: z.string().max(200).nullable().optional(),
+  gclid: z.string().max(400).nullable().optional(),
+  gbraid: z.string().max(400).nullable().optional(),
+  wbraid: z.string().max(400).nullable().optional(),
+  referrer: z.string().max(2048).nullable().optional(),
+  landing_path: z.string().max(2048).nullable().optional(),
+  landing_url: z.string().max(2048).nullable().optional(),
+  anonymous_id: z.string().max(128).nullable().optional(),
+  session_id: z.string().max(128).nullable().optional(),
+});
+
 const LeadSchema = z.object({
   firstName: z.string().trim().min(1).max(80),
   lastName: z.string().trim().min(1).max(80),
@@ -46,6 +63,7 @@ const LeadSchema = z.object({
       total: z.number().nonnegative().optional().default(0),
     })
     .optional(),
+  attribution: AttributionSchema.optional(),
 });
 
 function gh(token: string) {
@@ -77,6 +95,16 @@ const slugify = (s: string) =>
     .slice(0, 64) || "lead";
 
 function buildHtmlEmail(d: z.infer<typeof LeadSchema>, when: string, leadUrl: string): string {
+  const a = d.attribution;
+  const srcLabel = !a
+    ? "Direct / inconnu"
+    : a.gclid || a.utm_medium === "cpc"
+      ? "Google Ads (payant)" + (a.utm_campaign ? " · " + a.utm_campaign : "")
+      : a.utm_source
+        ? a.utm_source + (a.utm_medium ? " / " + a.utm_medium : "")
+        : a.referrer
+          ? "Réf. " + a.referrer
+          : "Direct / inconnu";
   const devisRows: string[] = [];
   if (d.devis) {
     if (d.devis.forfait && typeof d.devis.forfaitPrice === "number") {
@@ -118,6 +146,10 @@ function buildHtmlEmail(d: z.infer<typeof LeadSchema>, when: string, leadUrl: st
       <tr>
         <td style="padding: 8px 0; color: #5C5A54; vertical-align: top;">Reçu le</td>
         <td style="padding: 8px 0; color: #5C5A54; font-family: ui-monospace, monospace; font-size: 12px;">${esc(when)}</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px 0; color: #5C5A54; vertical-align: top;">Source</td>
+        <td style="padding: 8px 0; font-weight: 600;">${esc(srcLabel)}</td>
       </tr>
     </table>
 
@@ -189,6 +221,31 @@ function buildMarkdown(d: z.infer<typeof LeadSchema>, when: string): string {
     lines.push(d.notes);
     lines.push("");
   }
+
+  const a = d.attribution;
+  if (a) {
+    const channel =
+      a.gclid || a.utm_medium === "cpc"
+        ? "Google Ads (payant)"
+        : a.utm_source
+          ? `${a.utm_source}${a.utm_medium ? " / " + a.utm_medium : ""}`
+          : a.referrer
+            ? `Référent (${a.referrer})`
+            : "Direct / inconnu";
+    lines.push("## Attribution (cooked)");
+    lines.push("");
+    lines.push(`- **Canal** : ${channel}`);
+    if (a.utm_campaign) lines.push(`- **Campagne** : ${a.utm_campaign}`);
+    if (a.utm_term) lines.push(`- **Terme** : ${a.utm_term}`);
+    if (a.utm_content) lines.push(`- **Contenu / groupe d'annonces** : ${a.utm_content}`);
+    if (a.gclid) lines.push(`- **gclid** : \`${a.gclid}\``);
+    if (a.referrer) lines.push(`- **Referrer** : ${a.referrer}`);
+    if (a.landing_path) lines.push(`- **Page d'entrée** : ${a.landing_path}`);
+    if (a.anonymous_id) lines.push(`- **anonymous_id** : \`${a.anonymous_id}\``);
+    if (a.session_id) lines.push(`- **session_id** : \`${a.session_id}\``);
+    lines.push("");
+  }
+
   return lines.join("\n");
 }
 
