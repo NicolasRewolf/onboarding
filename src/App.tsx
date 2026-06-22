@@ -3,10 +3,12 @@ import "./styles/globals.css";
 import Home from "./pages/Home";
 import Onboarding from "./pages/Onboarding";
 import OffreStarter from "./offres/OffreStarter";
+import CookedTracker from "./tracking/CookedTracker";
 
 export default function App() {
   return (
     <BrowserRouter>
+      <CookedTracker />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/c/:slug" element={<Onboarding />} />
