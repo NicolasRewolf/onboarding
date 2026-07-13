@@ -270,9 +270,9 @@ function Intro({
         <span className="text-rw-orange">{salutation(client.name)}</span>, à toi de choisir tes reels.
       </h1>
       <p className="mt-5 max-w-xl text-[16px] leading-relaxed text-rw-muted">
-        On a présélectionné <b className="text-rw-black">{REELS.length} sujets</b> pour tes reels, notés selon
-        cinq critères (demande, universalité, viralité, partage, business). À toi de trancher, à l'instinct :
-        lesquels tu as <b className="text-rw-black">hâte de tourner</b> ?
+        Nous avons présélectionné <b className="text-rw-black">{REELS.length} sujets</b> pour tes reels, notés sur
+        cinq critères : demande, universalité, viralité, partage et business. À toi de trancher :{" "}
+        <b className="text-rw-black">lesquels souhaites-tu tourner</b> ?
       </p>
 
       {/* Légende des choix */}
@@ -297,9 +297,9 @@ function Intro({
       <div className="mt-6 flex items-start gap-3 border-2 border-rw-black bg-rw-paper-subtle p-4">
         <Clapperboard className="mt-0.5 size-5 shrink-0 text-rw-orange" strokeWidth={1.75} />
         <p className="text-[14px] leading-relaxed text-rw-black">
-          Au final, on en tournera <b>{FINAL_COUNT} ensemble</b> — pas les 18. Tes votes, et surtout tes{" "}
-          <b>coups de cœur</b>, nous aident à choisir les meilleurs. Rien n'est figé ici : on en rediscute avant de
-          tourner.
+          Au total, <b>{FINAL_COUNT} sujets</b> seront retenus pour le tournage — pas les 18. Tes votes, et en
+          particulier tes <b>coups de cœur</b>, orientent la sélection finale. Rien n'est arrêté à ce stade : nous
+          en rediscutons avant de tourner.
         </p>
       </div>
 
@@ -452,7 +452,7 @@ function VoteDeck({
                 <span className="text-rw-black">
                   {votedMeta.emoji} {votedMeta.label}
                 </span>{" "}
-                — change, ou continue →
+                — modifie ou poursuis →
               </span>
             )}
           </div>
@@ -657,7 +657,7 @@ function ReelCard({
               <div className="border-2 border-dashed border-rw-tertiary bg-rw-paper-subtle px-4 py-3">
                 <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-rw-muted">Pas encore scoré</p>
                 <p className="mt-1 text-[13.5px] text-rw-muted">
-                  Sujet en réserve, gardé pour un 2ᵉ tour. Vote à l'instinct — ton avis fait pencher la balance.
+                  Sujet en réserve, conservé pour un second tour. Ton avis fait pencher la balance.
                 </p>
               </div>
             )}
@@ -813,9 +813,9 @@ function Recap({
       <p className="rw-eyebrow text-rw-orange">Ta sélection</p>
       <h1 className="mt-3 text-[clamp(2rem,5.5vw,3.2rem)]">Relis, ajuste, envoie.</h1>
       <p className="mt-3 max-w-lg text-[15px] text-rw-muted">
-        {stats.decided}/{stats.total} sujets tranchés. Tu peux encore changer chaque vote avant d'envoyer à
-        Nicolas. On en retiendra <b className="text-rw-black">{FINAL_COUNT} au final</b> — tes coups de cœur pèsent
-        le plus lourd.
+        {stats.decided}/{stats.total} sujets tranchés. Tu peux encore modifier chaque vote avant de l'envoyer à
+        Nicolas. <b className="text-rw-black">{FINAL_COUNT} sujets</b> seront retenus au final ; tes coups de cœur
+        pèsent le plus lourd dans l'arbitrage.
       </p>
 
       {/* Bilan */}
@@ -924,8 +924,8 @@ function Recap({
 
       {status.k === "error" && (
         <p className="mt-6 border-2 border-rw-danger bg-rw-danger/5 px-4 py-3 text-[13.5px] text-rw-danger">
-          L'envoi automatique a échoué ({status.msg}). Pas de panique : tes votes restent sur cet appareil.
-          Utilise <b>« Copier le récap »</b> ou l'e-mail ci-dessous pour l'envoyer à Nicolas.
+          L'envoi automatique a échoué ({status.msg}). Tes votes restent enregistrés sur cet appareil. Utilise{" "}
+          <b>« Copier le récap »</b> ou l'e-mail ci-dessous pour les transmettre à Nicolas.
         </p>
       )}
 
@@ -1014,13 +1014,13 @@ function Done({
         {client.isTest ? (
           <>
             <b className="text-rw-black">Démo terminée</b> — ce parcours de test n'a rien transmis à l'équipe. Tu
-            peux recommencer autant de fois que tu veux.
+            peux le relancer autant de fois que nécessaire.
           </>
         ) : (
           <>
-            Tes votes sont partis chez Nicolas — <b className="text-rw-black">{stats.tourne} sujets à tourner</b>,{" "}
-            {stats.coeurs} coup{stats.coeurs > 1 ? "s" : ""} de cœur en priorité. Il s'en sert pour arrêter les{" "}
-            <b className="text-rw-black">{FINAL_COUNT} reels</b> à produire et revient vers toi très vite.
+            Tes votes ont été transmis à Nicolas — <b className="text-rw-black">{stats.tourne} sujets à tourner</b>,{" "}
+            {stats.coeurs} coup{stats.coeurs > 1 ? "s" : ""} de cœur en priorité. Ils serviront à arrêter les{" "}
+            <b className="text-rw-black">{FINAL_COUNT} reels</b> à produire ; retour vers toi très vite.
           </>
         )}
       </p>
@@ -1035,10 +1035,9 @@ function Done({
       </div>
 
       <div className="mt-12 border-t border-rw-black/10 pt-8">
-        <p className="rw-eyebrow text-rw-orange">Envie d'en ajouter un ?</p>
+        <p className="rw-eyebrow text-rw-orange">Un sujet à ajouter ?</p>
         <p className="mx-auto mt-3 max-w-md text-[15px] leading-relaxed text-rw-muted">
-          Une idée de sujet qui n'est pas dans la liste ? Écris à Nicolas, on la score et on l'ajoute au prochain
-          tour.
+          Un sujet manque à la liste ? Écris à Nicolas : nous l'évaluons et l'ajoutons au prochain tour.
         </p>
         <div className="mt-5 flex flex-wrap justify-center gap-3">
           <Button variant="rwDark" asChild>
