@@ -297,9 +297,8 @@ function Intro({
       <div className="mt-6 flex items-start gap-3 border-2 border-rw-black bg-rw-paper-subtle p-4">
         <Clapperboard className="mt-0.5 size-5 shrink-0 text-rw-orange" strokeWidth={1.75} />
         <p className="text-[14px] leading-relaxed text-rw-black">
-          Au total, <b>{FINAL_COUNT} sujets</b> seront retenus pour le tournage — pas les 18. Tes votes, et en
-          particulier tes <b>coups de cœur</b>, orientent la sélection finale. Rien n'est arrêté à ce stade : nous
-          en rediscutons avant de tourner.
+          Sur les 18 sujets, <b>{FINAL_COUNT} seront retenus</b> pour le tournage. Tes votes, et surtout tes{" "}
+          <b>coups de cœur</b>, guident la sélection. Rien n'est définitif : nous en reparlons avant de tourner.
         </p>
       </div>
 
@@ -815,7 +814,7 @@ function Recap({
       <p className="mt-3 max-w-lg text-[15px] text-rw-muted">
         {stats.decided}/{stats.total} sujets tranchés. Tu peux encore modifier chaque vote avant de l'envoyer à
         Nicolas. <b className="text-rw-black">{FINAL_COUNT} sujets</b> seront retenus au final ; tes coups de cœur
-        pèsent le plus lourd dans l'arbitrage.
+        comptent le plus.
       </p>
 
       {/* Bilan */}
