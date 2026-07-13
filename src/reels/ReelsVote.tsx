@@ -267,12 +267,12 @@ function Intro({
     <div className="mx-auto flex min-h-[calc(100dvh-3.5rem)] max-w-2xl flex-col justify-center px-6 py-12 sm:px-8">
       <p className="rw-eyebrow text-rw-orange">REWOLF × {salutation(client.name)} · Reels</p>
       <h1 className="mt-4 text-[clamp(2.1rem,6vw,3.9rem)] leading-[0.94]">
-        <span className="text-rw-orange">{salutation(client.name)}</span>, à vous de choisir vos reels.
+        <span className="text-rw-orange">{salutation(client.name)}</span>, à toi de choisir tes reels.
       </h1>
       <p className="mt-5 max-w-xl text-[16px] leading-relaxed text-rw-muted">
-        On a présélectionné <b className="text-rw-black">{REELS.length} sujets</b> pour vos reels, notés selon
-        cinq critères (demande, universalité, viralité, partage, business). À vous de trancher, à l'instinct :
-        lesquels vous avez <b className="text-rw-black">hâte de tourner</b> ?
+        On a présélectionné <b className="text-rw-black">{REELS.length} sujets</b> pour tes reels, notés selon
+        cinq critères (demande, universalité, viralité, partage, business). À toi de trancher, à l'instinct :
+        lesquels tu as <b className="text-rw-black">hâte de tourner</b> ?
       </p>
 
       {/* Légende des choix */}
@@ -290,14 +290,14 @@ function Intro({
       </div>
       <p className="mt-3 flex items-center gap-2 text-[13px] text-rw-muted">
         <Star className="size-4 fill-rw-orange text-rw-orange" />
-        Épinglez jusqu'à <b className="text-rw-black">{MAX_COEURS} coups de cœur</b> — vos priorités de tournage.
+        Épingle jusqu'à <b className="text-rw-black">{MAX_COEURS} coups de cœur</b> — tes priorités de tournage.
       </p>
 
       {/* Cadrage des attentes : on n'en tournera que 8, pas les 18 */}
       <div className="mt-6 flex items-start gap-3 border-2 border-rw-black bg-rw-paper-subtle p-4">
         <Clapperboard className="mt-0.5 size-5 shrink-0 text-rw-orange" strokeWidth={1.75} />
         <p className="text-[14px] leading-relaxed text-rw-black">
-          Au final, on en tournera <b>{FINAL_COUNT} ensemble</b> — pas les 18. Vos votes, et surtout vos{" "}
+          Au final, on en tournera <b>{FINAL_COUNT} ensemble</b> — pas les 18. Tes votes, et surtout tes{" "}
           <b>coups de cœur</b>, nous aident à choisir les meilleurs. Rien n'est figé ici : on en rediscute avant de
           tourner.
         </p>
@@ -305,7 +305,7 @@ function Intro({
 
       {client.isTest && (
         <p className="mt-4 border-l-[3px] border-rw-orange bg-rw-orange/10 px-3 py-2 text-[13px] text-rw-black">
-          <b>Démo</b> — environnement de test. Vos votes ne sont pas transmis à l'équipe.
+          <b>Démo</b> — environnement de test. Tes votes ne sont pas transmis à l'équipe.
         </p>
       )}
 
@@ -452,7 +452,7 @@ function VoteDeck({
                 <span className="text-rw-black">
                   {votedMeta.emoji} {votedMeta.label}
                 </span>{" "}
-                — changez, ou continuez →
+                — change, ou continue →
               </span>
             )}
           </div>
@@ -657,7 +657,7 @@ function ReelCard({
               <div className="border-2 border-dashed border-rw-tertiary bg-rw-paper-subtle px-4 py-3">
                 <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-rw-muted">Pas encore scoré</p>
                 <p className="mt-1 text-[13.5px] text-rw-muted">
-                  Sujet en réserve, gardé pour un 2ᵉ tour. Votez à l'instinct — votre avis fait pencher la balance.
+                  Sujet en réserve, gardé pour un 2ᵉ tour. Vote à l'instinct — ton avis fait pencher la balance.
                 </p>
               </div>
             )}
@@ -810,11 +810,11 @@ function Recap({
 
   return (
     <div className="mx-auto max-w-2xl px-6 pb-24 pt-10 sm:px-8">
-      <p className="rw-eyebrow text-rw-orange">Votre sélection</p>
-      <h1 className="mt-3 text-[clamp(2rem,5.5vw,3.2rem)]">Relisez, ajustez, envoyez.</h1>
+      <p className="rw-eyebrow text-rw-orange">Ta sélection</p>
+      <h1 className="mt-3 text-[clamp(2rem,5.5vw,3.2rem)]">Relis, ajuste, envoie.</h1>
       <p className="mt-3 max-w-lg text-[15px] text-rw-muted">
-        {stats.decided}/{stats.total} sujets tranchés. Vous pouvez encore changer chaque vote avant d'envoyer à
-        Nicolas. On en retiendra <b className="text-rw-black">{FINAL_COUNT} au final</b> — vos coups de cœur pèsent
+        {stats.decided}/{stats.total} sujets tranchés. Tu peux encore changer chaque vote avant d'envoyer à
+        Nicolas. On en retiendra <b className="text-rw-black">{FINAL_COUNT} au final</b> — tes coups de cœur pèsent
         le plus lourd.
       </p>
 
@@ -846,7 +846,7 @@ function Recap({
       {/* Sujets tranchés — éditables */}
       {lines.length > 0 && (
         <div className="mt-8 space-y-2">
-          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-rw-muted">Tous vos votes</p>
+          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-rw-muted">Tous tes votes</p>
           {lines.map((l) => {
             const reel = REELS.find((r) => r.id === l.id)!;
             const isCoeur = coeurSet.has(l.id);
@@ -924,8 +924,8 @@ function Recap({
 
       {status.k === "error" && (
         <p className="mt-6 border-2 border-rw-danger bg-rw-danger/5 px-4 py-3 text-[13.5px] text-rw-danger">
-          L'envoi automatique a échoué ({status.msg}). Pas de panique : vos votes restent sur cet appareil.
-          Utilisez <b>« Copier le récap »</b> ou l'e-mail ci-dessous pour l'envoyer à Nicolas.
+          L'envoi automatique a échoué ({status.msg}). Pas de panique : tes votes restent sur cet appareil.
+          Utilise <b>« Copier le récap »</b> ou l'e-mail ci-dessous pour l'envoyer à Nicolas.
         </p>
       )}
 
@@ -946,7 +946,7 @@ function Recap({
         </Button>
       </div>
       <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.18em] text-rw-tertiary">
-        Vos votes restent privés · envoyés uniquement à REWOLF
+        Tes votes restent privés · envoyés uniquement à REWOLF
       </p>
     </div>
   );
@@ -1013,14 +1013,14 @@ function Done({
       <p className="mx-auto mt-5 max-w-md text-[16px] leading-relaxed text-rw-muted">
         {client.isTest ? (
           <>
-            <b className="text-rw-black">Démo terminée</b> — ce parcours de test n'a rien transmis à l'équipe. Vous
-            pouvez recommencer autant de fois que vous voulez.
+            <b className="text-rw-black">Démo terminée</b> — ce parcours de test n'a rien transmis à l'équipe. Tu
+            peux recommencer autant de fois que tu veux.
           </>
         ) : (
           <>
-            Vos votes sont partis chez Nicolas — <b className="text-rw-black">{stats.tourne} sujets à tourner</b>,{" "}
+            Tes votes sont partis chez Nicolas — <b className="text-rw-black">{stats.tourne} sujets à tourner</b>,{" "}
             {stats.coeurs} coup{stats.coeurs > 1 ? "s" : ""} de cœur en priorité. Il s'en sert pour arrêter les{" "}
-            <b className="text-rw-black">{FINAL_COUNT} reels</b> à produire et revient vers vous très vite.
+            <b className="text-rw-black">{FINAL_COUNT} reels</b> à produire et revient vers toi très vite.
           </>
         )}
       </p>
@@ -1037,7 +1037,7 @@ function Done({
       <div className="mt-12 border-t border-rw-black/10 pt-8">
         <p className="rw-eyebrow text-rw-orange">Envie d'en ajouter un ?</p>
         <p className="mx-auto mt-3 max-w-md text-[15px] leading-relaxed text-rw-muted">
-          Une idée de sujet qui n'est pas dans la liste ? Écrivez à Nicolas, on la score et on l'ajoute au prochain
+          Une idée de sujet qui n'est pas dans la liste ? Écris à Nicolas, on la score et on l'ajoute au prochain
           tour.
         </p>
         <div className="mt-5 flex flex-wrap justify-center gap-3">
