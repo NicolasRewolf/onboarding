@@ -32,7 +32,7 @@ const PLOUTON: DispoEvent = {
   title: "Shooting équipe · Cabinet Plouton",
   subtitle: "Trouvons le créneau où tout le monde est là",
   intro:
-    "Marque les demi-journées où tu es disponible pour la séance photo. On croise tout le monde pour caler la date qui arrange le cabinet.",
+    "On va refaire les photos individuelles et d'équipe pour cette année 2026-2027, dans les nouveaux bureaux. Merci de signifier vos dispos afin de faire ça sur une seule demi-journée. :)",
   start: "2026-08-01",
   end: "2026-09-30",
   members: [

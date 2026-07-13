@@ -218,7 +218,7 @@ function WhoStep({ event, onPick }: { event: DispoEvent; onPick: (p: Picked) => 
     <section className="mx-auto max-w-3xl px-5 py-12 sm:px-8 sm:py-16">
       <p className="rw-eyebrow text-rw-orange">{event.subtitle}</p>
       <h1 className="mt-4 text-[clamp(2rem,5.5vw,3.4rem)] leading-[0.95]">
-        C'est <span className="text-rw-orange">qui</span> ?
+        Je <span className="text-rw-orange">suis</span>…
       </h1>
       <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-rw-muted">{event.intro}</p>
 
