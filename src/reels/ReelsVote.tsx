@@ -406,7 +406,7 @@ function VoteDeck({
   const votedMeta = currentVote ? CHOICE_BY_KEY[currentVote] : null;
 
   return (
-    <div className="mx-auto max-w-2xl px-5 pb-48 pt-6 sm:px-8">
+    <div className="mx-auto max-w-2xl px-5 pb-44 pt-6 sm:px-8 lg:max-w-4xl">
       <ProgressBar stats={stats} index={index} />
 
       {/* Deck : carte active + 2 cartes en dessous pour l'effet de paquet */}
@@ -436,13 +436,18 @@ function VoteDeck({
         </AnimatePresence>
       </div>
 
-      {/* Barre d'actions */}
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t-2 border-rw-black bg-white/95 px-4 py-3 backdrop-blur sm:px-8">
-        <div className="mx-auto max-w-2xl">
+      {/* Barre d'actions flottante : fondu doux vers le bas au lieu d'une bande
+          pleine largeur. Les boutons portent leur propre fond → ils flottent. */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-x-0 bottom-0 z-20 h-52 bg-gradient-to-t from-background via-background/85 to-transparent"
+      />
+      <div className="fixed inset-x-0 bottom-0 z-30 px-4 pb-4 sm:px-8">
+        <div className="pointer-events-auto mx-auto max-w-2xl lg:max-w-4xl">
           {/* Statut « déjà noté » (hauteur réservée pour éviter les sauts) */}
           <div className="mb-2 flex h-4 items-center justify-center text-center">
             {votedMeta && (
-              <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-rw-muted">
+              <span className="bg-background/90 px-2 font-mono text-[10px] uppercase tracking-[0.14em] text-rw-muted backdrop-blur-sm">
                 Déjà noté :{" "}
                 <span className="text-rw-black">
                   {votedMeta.emoji} {votedMeta.label}
@@ -642,40 +647,44 @@ function ReelCard({
           <p className="text-[14px] font-medium text-rw-black">{reel.axe}</p>
         </div>
 
-        {reel.scores ? (
-          <ScorePanel reel={reel} />
-        ) : (
-          <div className="mt-5 border-2 border-dashed border-rw-tertiary bg-rw-paper-subtle px-4 py-3">
-            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-rw-muted">Pas encore scoré</p>
-            <p className="mt-1 text-[13.5px] text-rw-muted">
-              Sujet en réserve, gardé pour un 2ᵉ tour. Votez à l'instinct — votre avis fait pencher la balance.
-            </p>
+        {/* Desktop : 2 colonnes (texte à gauche, score à droite) → carte plus compacte.
+            Mobile : le score reste juste après l'angle (order par défaut). */}
+        <div className="mt-5 grid gap-5 lg:grid-cols-2 lg:items-start lg:gap-8">
+          <div className="lg:order-2">
+            {reel.scores ? (
+              <ScorePanel reel={reel} />
+            ) : (
+              <div className="border-2 border-dashed border-rw-tertiary bg-rw-paper-subtle px-4 py-3">
+                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-rw-muted">Pas encore scoré</p>
+                <p className="mt-1 text-[13.5px] text-rw-muted">
+                  Sujet en réserve, gardé pour un 2ᵉ tour. Votez à l'instinct — votre avis fait pencher la balance.
+                </p>
+              </div>
+            )}
           </div>
-        )}
 
-        {/* Pourquoi */}
-        <div className="mt-5">
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-rw-muted">Pourquoi ce sujet</p>
-          <p className="mt-1.5 text-[14.5px] leading-relaxed text-rw-black">{reel.pourquoi}</p>
+          <div className="space-y-4 lg:order-1">
+            <div>
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-rw-muted">Pourquoi ce sujet</p>
+              <p className="mt-1.5 text-[14.5px] leading-relaxed text-rw-black">{reel.pourquoi}</p>
+            </div>
+            <div>
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-rw-muted">Données clés</p>
+              <ul className="mt-2 flex flex-wrap gap-1.5">
+                {reel.donnees.map((d) => (
+                  <li key={d} className="border border-rw-line-subtle bg-white px-2 py-1 font-mono text-[11px] text-rw-muted">
+                    {d}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {reel.lien && (
+              <p className="truncate font-mono text-[10px] uppercase tracking-[0.14em] text-rw-tertiary">
+                Ressource liée · {reel.lien}
+              </p>
+            )}
+          </div>
         </div>
-
-        {/* Données clés */}
-        <div className="mt-4">
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-rw-muted">Données clés</p>
-          <ul className="mt-2 flex flex-wrap gap-1.5">
-            {reel.donnees.map((d) => (
-              <li key={d} className="border border-rw-line-subtle bg-white px-2 py-1 font-mono text-[11px] text-rw-muted">
-                {d}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {reel.lien && (
-          <p className="mt-4 truncate font-mono text-[10px] uppercase tracking-[0.14em] text-rw-tertiary">
-            Ressource liée · {reel.lien}
-          </p>
-        )}
       </div>
     </article>
   );
@@ -685,7 +694,7 @@ function ScorePanel({ reel }: { reel: Reel }) {
   const scores = reel.scores!;
   const pct = reel.composite !== null ? Math.round((reel.composite / COMPOSITE_MAX) * 100) : 0;
   return (
-    <div className="mt-5 border-2 border-rw-black">
+    <div className="border-2 border-rw-black">
       {/* Composite */}
       <div className="flex items-center justify-between gap-4 border-b-2 border-rw-black bg-rw-black px-4 py-3 text-white">
         <div>
