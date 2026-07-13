@@ -115,17 +115,25 @@ export default function ReelsVote() {
       return { ...s, index: prev, votes: nextVotes };
     });
 
+  // Passage au récap : on élague les coups de cœur restés sur un sujet non tranché
+  // (possible via « Récap » anticipé ou un Retour). Garantit coeurs ⊆ sujets votés,
+  // donc un compte ⭐ cohérent avec la liste, le markdown et l'e-mail (client + serveur).
+  const enterRecap = useCallback(() => {
+    setSession((s) => ({ ...s, coeurs: s.coeurs.filter((id) => s.votes[id]) }));
+    setPhase("recap");
+  }, []);
+
   // Fin du deck → récap.
   useEffect(() => {
-    if (phase === "vote" && session.index >= REELS.length) setPhase("recap");
-  }, [phase, session.index]);
+    if (phase === "vote" && session.index >= REELS.length) enterRecap();
+  }, [phase, session.index, enterRecap]);
 
   const changeVote = (id: number, choice: ReelChoice) =>
     patch({ votes: { ...session.votes, [id]: choice } });
 
   return (
     <div className="min-h-dvh bg-background text-foreground">
-      <TopBar client={client} stats={stats} phase={phase} onRecap={() => setPhase("recap")} />
+      <TopBar client={client} stats={stats} phase={phase} onRecap={enterRecap} />
 
       {phase === "intro" && <Intro client={client} session={session} onStart={start} />}
 
@@ -140,7 +148,7 @@ export default function ReelsVote() {
           onVote={vote}
           onToggleCoeur={toggleCurrentCoeur}
           onUndo={undo}
-          onRecap={() => setPhase("recap")}
+          onRecap={enterRecap}
           canUndo={session.index > 0}
         />
       )}
@@ -330,6 +338,8 @@ function VoteDeck({
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement)?.tagName;
       if (tag === "INPUT" || tag === "TEXTAREA") return;
+      // Ne pas détourner les raccourcis système (Cmd/Ctrl+C copier, Cmd+← naviguer…).
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
       if (e.key === "ArrowLeft") onVote("passe");
       else if (e.key === "ArrowRight") onVote("tourne");
       else if (e.key === "ArrowUp" || e.key === "ArrowDown") onVote("voir");
