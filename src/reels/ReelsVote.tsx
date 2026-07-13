@@ -23,8 +23,7 @@ import {
   CRITERIA,
   MAX_COEURS,
   REELS,
-  REELS_SCORED,
-  REELS_TOSCORE,
+  STATUT_COUNTS,
   resolveReelsClient,
   salutation,
   statutMeta,
@@ -278,7 +277,7 @@ function Intro({
       <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 font-mono text-[12px] text-rw-muted">
         <span>≈ 5 MIN</span>
         <span>
-          {REELS_SCORED} SCORÉS · {REELS_TOSCORE} À SCORER
+          {STATUT_COUNTS.retenu} RETENUS · {STATUT_COUNTS.reserve} EN RÉSERVE · {STATUT_COUNTS.arbitrer} À ARBITRER
         </span>
         <span>REPRISE AUTO</span>
       </div>

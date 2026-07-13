@@ -1,15 +1,16 @@
-// Feature « reels » — support client autonome : Me Plouton vote sur les sujets de
+// Feature « reels » — support client autonome : Julien vote sur les sujets de
 // reels présélectionnés par Nicolas. Aucune collecte via api/submit (réservé au
 // questionnaire) : cette feature a son propre endpoint autonome (api/reels-vote.ts).
 //
-// Source des données : présélection Nicolas (Google Sheet « Sélection reels »).
-// Chaque sujet est noté sur 5 critères pondérés → score composite /95.
+// Source des données : présélection Nicolas (Google Sheet « Sélection reels »),
+// scoring mis à jour. Chaque sujet est noté sur 5 critères pondérés → composite /95.
+// Ordre = score composite décroissant.
 
 /* ─────────────────────────── Types ─────────────────────────── */
 
 export type ReelChoice = "tourne" | "voir" | "passe";
 
-export type StatutKind = "retenu" | "reserve" | "a-scorer";
+export type StatutKind = "retenu" | "reserve" | "arbitrer";
 
 export interface ReelScores {
   demande: number; // 0–5
@@ -26,7 +27,7 @@ export interface Reel {
   format: "actu" | "ressource";
   /** Axe testé / hypothèse de la présélection. */
   axe: string;
-  /** null pour les sujets « À scorer » (round 2). */
+  /** null si un sujet n'est pas encore noté (aujourd'hui : tous le sont). */
   scores: ReelScores | null;
   /** Score composite /95, null si non scoré. */
   composite: number | null;
@@ -34,11 +35,11 @@ export interface Reel {
   statutKind: StatutKind;
   /** Précision entre parenthèses du statut (ex. « 1 pénal », « actu », « test »). */
   statutNote?: string;
-  /** Synthèse de la logique de sélection (transparence côté Me Plouton). */
+  /** Synthèse de la logique de sélection (transparence côté client). */
   pourquoi: string;
   /** Données clés (volumes, vues on-site, contacts…). */
   donnees: string[];
-  /** Slug de la ressource liée sur le site du cabinet (référence, non cliquable). */
+  /** Ressource liée sur le site du cabinet (référence, non cliquable). */
   lien?: string;
 }
 
@@ -84,8 +85,7 @@ export const REELS: Reel[] = [
     composite: 86,
     statut: "RETENU",
     statutKind: "retenu",
-    pourquoi:
-      "Composite n°1 (86), en hausse de +50 %/an, sujet d'autorité phare qui convertit fort.",
+    pourquoi: "Composite n°1, en hausse de +50 %/an, sujet d'autorité phare qui convertit fort.",
     donnees: ["6 600 rech./mois (+50 %/an)", "Article « contrôle coercitif » : 4 694 vues", "Pilier violences : 9 contacts"],
     lien: "controle-coercitif-reconnaitre-agir",
   },
@@ -106,6 +106,21 @@ export const REELS: Reel[] = [
   },
   {
     id: 3,
+    sujet: "Abus de faiblesse : protéger un proche âgé",
+    pilier: "Victime / pénal",
+    format: "ressource",
+    axe: "Relatabilité (proches âgés)",
+    scores: { demande: 4, universalite: 5, viralite: 4, partage: 5, business: 4 },
+    composite: 85,
+    statut: "À ARBITRER",
+    statutKind: "arbitrer",
+    pourquoi:
+      "85 — entrerait dans le top : quasi universel, très partageable (protéger un proche âgé), forte indignation ; le pilier victimes/pénal convertit.",
+    donnees: ["4 400 rech./mois (−33 %/an)", "Article « abus de confiance » : 7 241 vues (proxy)", "Pilier pénal / victimes"],
+    lien: "abus-de-confiance",
+  },
+  {
+    id: 4,
     sujet: "Faux conseiller bancaire : le virement frauduleux",
     pilier: "Victime / quotidien",
     format: "ressource",
@@ -119,7 +134,7 @@ export const REELS: Reel[] = [
     lien: "arnaque-en-ligne-victime-escroquerie-recours",
   },
   {
-    id: 4,
+    id: 5,
     sujet: "Casier judiciaire : contenu & effacement",
     pilier: "Pénal de masse",
     format: "ressource",
@@ -133,7 +148,7 @@ export const REELS: Reel[] = [
     lien: "casier-judiciaire-comprendre-et-effacer",
   },
   {
-    id: 5,
+    id: 6,
     sujet: "Accident de la route : les 3 réflexes",
     pilier: "Victime / route",
     format: "ressource",
@@ -147,7 +162,7 @@ export const REELS: Reel[] = [
     lien: "loi-badinter-85-comprendre-vos-droits",
   },
   {
-    id: 6,
+    id: 7,
     sujet: "Assurance : la 1ʳᵉ offre n'est jamais la dernière",
     pilier: "Victime / quotidien",
     format: "ressource",
@@ -161,7 +176,7 @@ export const REELS: Reel[] = [
     lien: "sinistre-habitation-recours-assurance",
   },
   {
-    id: 7,
+    id: 8,
     sujet: "Porter plainte : et si on refuse de la prendre ?",
     pilier: "Victime",
     format: "ressource",
@@ -175,7 +190,7 @@ export const REELS: Reel[] = [
     lien: "depot-de-plainte-en-france-comment-porter-plainte",
   },
   {
-    id: 8,
+    id: 9,
     sujet: "Garde à vue : vos droits si la police vous arrête",
     pilier: "Pénal procédural",
     format: "ressource",
@@ -191,7 +206,22 @@ export const REELS: Reel[] = [
     lien: "duree-de-la-garde-a-vue-24h-48h-96h-combien-de-temps-maximum",
   },
   {
-    id: 9,
+    id: 10,
+    sujet: "Escroquerie sentimentale (brouteur) : reconnaître & agir",
+    pilier: "Victime / actu",
+    format: "actu",
+    axe: "Fort viral / partage",
+    scores: { demande: 2, universalite: 5, viralite: 5, partage: 5, business: 2 },
+    composite: 80,
+    statut: "À ARBITRER",
+    statutKind: "arbitrer",
+    pourquoi:
+      "80 — recherche faible/déclinante mais universalité + viralité + partage au max : pari reach pur, business faible (recouvrement à l'étranger).",
+    donnees: ["Recherche faible (210–390/mois)", "« brouteur » 9 900 en chute (−93 %)", "Pari sur la viralité"],
+    lien: "arnaque-en-ligne-victime-escroquerie-recours",
+  },
+  {
+    id: 11,
     sujet: "Inceste & imprescriptibilité : le délai change tout",
     pilier: "Actu / autorité",
     format: "actu",
@@ -206,7 +236,21 @@ export const REELS: Reel[] = [
     lien: "proposition-de-loi-inceste-et-imprescriptibilite",
   },
   {
-    id: 10,
+    id: 12,
+    sujet: "Usurpation d'identité : réagir vite",
+    pilier: "Victime",
+    format: "ressource",
+    axe: "Volume en forte hausse",
+    scores: { demande: 4, universalite: 5, viralite: 4, partage: 4, business: 3 },
+    composite: 78,
+    statut: "À ARBITRER",
+    statutKind: "arbitrer",
+    pourquoi:
+      "78 — volume en forte hausse + universel (la peur), mais pas d'article source et conversion surtout administrative.",
+    donnees: ["9 900 rech./mois (+84 %/an, en hausse)", "Aucun article source", "Conversion surtout administrative"],
+  },
+  {
+    id: 13,
     sujet: "ITT : les 3 lettres qui décident de la gravité",
     pilier: "Victime / pénal",
     format: "ressource",
@@ -220,7 +264,7 @@ export const REELS: Reel[] = [
     lien: "itt-penale-definition-en-2025",
   },
   {
-    id: 11,
+    id: 14,
     sujet: "Pension alimentaire impayée : récupérer votre argent",
     pilier: "Famille",
     format: "ressource",
@@ -234,7 +278,21 @@ export const REELS: Reel[] = [
     lien: "pension-alimentaire-impayee-recours",
   },
   {
-    id: 12,
+    id: 15,
+    sujet: "Diffamation & e-réputation : agir quand on vous salit en ligne",
+    pilier: "Pénal / victime",
+    format: "ressource",
+    axe: "Gisement gros volume",
+    scores: { demande: 4, universalite: 4, viralite: 3, partage: 4, business: 4 },
+    composite: 71,
+    statut: "À ARBITRER",
+    statutKind: "arbitrer",
+    pourquoi:
+      "71 — volume massif (22 200 rech./mois) + gisement pénal convertisseur ; hook contre-intuitif « 3 mois pour agir ». Viralité moyenne (sujet juridique).",
+    donnees: ["22 200 rech./mois (gros volume)", "Gisement (pas d'article)", "Prescription : 3 mois pour agir"],
+  },
+  {
+    id: 16,
     sujet: "Morsure de chien : qui paie, et combien ?",
     pilier: "Victime / quotidien",
     format: "ressource",
@@ -249,82 +307,34 @@ export const REELS: Reel[] = [
     lien: "responsabilite-du-fait-des-choses",
   },
   {
-    id: 13,
+    id: 17,
     sujet: "Comparution immédiate : que se passe-t-il, comment se défendre ?",
     pilier: "Pénal procédural",
     format: "ressource",
     axe: "Drame procédural (côté accusé)",
-    scores: null,
-    composite: null,
-    statut: "À SCORER",
-    statutKind: "a-scorer",
-    pourquoi: "Dramatique et fort volume, mais public « accusé ».",
-    donnees: ["5 400 rech./mois", "Article « comparution immédiate » : 1 095 vues"],
+    scores: { demande: 4, universalite: 2, viralite: 4, partage: 3, business: 4 },
+    composite: 63,
+    statut: "À ARBITRER",
+    statutKind: "arbitrer",
+    pourquoi:
+      "63 — fort volume en hausse (+83 % ce mois) + article solide, mais public étroit « mis en cause » → universalité/partage bas.",
+    donnees: ["5 400 rech./mois (+83 % ce mois)", "Article « comparution immédiate » : 1 095 vues", "Pilier pénal : 10 contacts"],
+    lien: "qu-est-ce-que-la-comparution-immediate",
   },
   {
-    id: 14,
-    sujet: "Abus de faiblesse : protéger un proche âgé",
-    pilier: "Victime / pénal",
-    format: "ressource",
-    axe: "Relatabilité (proches âgés)",
-    scores: null,
-    composite: null,
-    statut: "À SCORER",
-    statutKind: "a-scorer",
-    pourquoi: "Très relatable (parents âgés ciblés), potentiel viral + business.",
-    donnees: ["4 400 rech./mois", "Article « abus de confiance » : 7 241 vues"],
-  },
-  {
-    id: 15,
-    sujet: "Escroquerie sentimentale (brouteur) : reconnaître & agir",
-    pilier: "Victime / actu",
-    format: "actu",
-    axe: "Fort viral / partage",
-    scores: null,
-    composite: null,
-    statut: "À SCORER",
-    statutKind: "a-scorer",
-    pourquoi: "Très partageable et émotionnel ; volume FR à confirmer.",
-    donnees: ["Fort potentiel viral", "Volume à sourcer"],
-  },
-  {
-    id: 16,
-    sujet: "Diffamation & e-réputation : agir quand on vous salit en ligne",
-    pilier: "Pénal / victime",
-    format: "ressource",
-    axe: "Gisement, plus de niche",
-    scores: null,
-    composite: null,
-    statut: "À SCORER",
-    statutKind: "a-scorer",
-    pourquoi: "Gisement à faible concurrence, mais plus de niche.",
-    donnees: ["1 900 rech./mois (« diffamation plainte »)"],
-  },
-  {
-    id: 17,
+    id: 18,
     sujet: "Chirurgie esthétique ratée : vos recours",
     pilier: "Victime / médical",
     format: "ressource",
     axe: "Viral potentiel (avant / après)",
-    scores: null,
-    composite: null,
-    statut: "À SCORER",
-    statutKind: "a-scorer",
-    pourquoi: "Visuel fort (avant / après), sujet médical relatable.",
-    donnees: ["Article « chirurgie esthétique » : 116 vues (récent)"],
-  },
-  {
-    id: 18,
-    sujet: "Usurpation d'identité : réagir vite",
-    pilier: "Victime",
-    format: "ressource",
-    axe: "Gros volume mais en déclin",
-    scores: null,
-    composite: null,
-    statut: "À SCORER",
-    statutKind: "a-scorer",
-    pourquoi: "Gros volume (9 900 rech./mois) MAIS −80 %/an — prudence.",
-    donnees: ["9 900 rech./mois", "−80 %/an (en déclin)"],
+    scores: { demande: 2, universalite: 3, viralite: 4, partage: 3, business: 3 },
+    composite: 59,
+    statut: "À ARBITRER",
+    statutKind: "arbitrer",
+    pourquoi:
+      "59 — visuel avant/après scroll-stoppant + angle faute vs aléa, mais recherche faible et sujet semi-niche ; business médical correct.",
+    donnees: ["Recherche faible", "Article « chirurgie esthétique » : 116 vues", "Médical : ≈ 2 contacts"],
+    lien: "chirurgie-esthetique-ratee-indemnisation",
   },
 ];
 
@@ -341,7 +351,7 @@ export interface ReelsClient {
 const REGISTRY: Record<string, ReelsClient> = {
   plouton: {
     slug: "plouton",
-    name: "Me Plouton",
+    name: "Julien",
     title: "Avocat",
     contrat: "Contrat de réalisation de reels",
   },
@@ -367,7 +377,7 @@ export function resolveReelsClient(slug: string, params: URLSearchParams): Reels
   };
 }
 
-/** « Me Plouton » / « Me Jacques Derieux » → « Maître Plouton » ; sinon le nom tel quel. */
+/** « Me Plouton » / « Me Jacques Derieux » → « Maître Plouton » ; un prénom seul reste tel quel. */
 export function salutation(name: string): string {
   const m = name.match(/^M(?:e|aître)\.?\s+(.+)$/i);
   if (m) {
@@ -385,11 +395,14 @@ export function statutMeta(kind: StatutKind): { label: string; className: string
       return { label: "Retenu", className: "border-rw-black bg-rw-orange text-rw-black" };
     case "reserve":
       return { label: "Réserve", className: "border-rw-black bg-rw-white text-rw-black" };
-    case "a-scorer":
-      return { label: "À scorer", className: "border-dashed border-rw-tertiary bg-rw-white text-rw-tertiary" };
+    case "arbitrer":
+      return { label: "À arbitrer", className: "border-dashed border-rw-black bg-rw-paper-subtle text-rw-black" };
   }
 }
 
-/** Sujets déjà scorés vs en attente — pour l'intro. */
-export const REELS_SCORED = REELS.filter((r) => r.composite !== null).length;
-export const REELS_TOSCORE = REELS.length - REELS_SCORED;
+/** Répartition par statut de présélection — pour l'intro. */
+export const STATUT_COUNTS = {
+  retenu: REELS.filter((r) => r.statutKind === "retenu").length,
+  reserve: REELS.filter((r) => r.statutKind === "reserve").length,
+  arbitrer: REELS.filter((r) => r.statutKind === "arbitrer").length,
+};
