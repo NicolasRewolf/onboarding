@@ -2,8 +2,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
+  ArrowLeft,
   ArrowRight,
   Check,
+  Clapperboard,
   Copy,
   Download,
   Loader2,
@@ -11,7 +13,6 @@ import {
   Pencil,
   Send,
   Star,
-  Undo2,
 } from "lucide-react";
 import { Wordmark } from "@/components/brand/Wordmark";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ import {
   CHOICE_BY_KEY,
   COMPOSITE_MAX,
   CRITERIA,
+  FINAL_COUNT,
   MAX_COEURS,
   REELS,
   STATUT_COUNTS,
@@ -38,6 +40,9 @@ const NICOLAS_EMAIL = "nicolas@rewolf.studio";
 
 type Phase = "intro" | "vote" | "recap" | "done";
 
+/** Direction de sortie de carte : un vote (fly-off) ou une navigation (glissé). */
+type ExitKind = ReelChoice | "prev" | "next";
+
 /* ═══════════════════════════ Page ═══════════════════════════ */
 
 export default function ReelsVote() {
@@ -47,7 +52,7 @@ export default function ReelsVote() {
 
   const [session, setSession] = useState<ReelsSession>(() => loadSession(slug));
   const [phase, setPhase] = useState<Phase>(() => (loadSession(slug).sent ? "done" : "intro"));
-  const [exitDir, setExitDir] = useState<ReelChoice>("tourne");
+  const [exitDir, setExitDir] = useState<ExitKind>("tourne");
 
   // Persistance : toute évolution de la session est sauvegardée localement.
   useEffect(() => {
@@ -105,14 +110,20 @@ export default function ReelsVote() {
   const toggleCoeur = (id: number) =>
     setSession((s) => ({ ...s, coeurs: toggleCoeurId(s.coeurs, id) }));
 
-  const undo = () =>
+  // Navigation NON destructive : revenir/avancer sans effacer les votes (on peut
+  // relire et changer d'avis). Avancer n'est permis que si la carte est tranchée.
+  const goPrev = () => {
+    setExitDir("prev");
+    setSession((s) => ({ ...s, index: Math.max(0, s.index - 1) }));
+  };
+  const goNext = () => {
+    setExitDir("next");
     setSession((s) => {
-      const prev = Math.max(0, s.index - 1);
-      const reel = REELS[prev];
-      const nextVotes = { ...s.votes };
-      if (reel) delete nextVotes[reel.id];
-      return { ...s, index: prev, votes: nextVotes };
+      const reel = REELS[s.index];
+      if (!reel || !s.votes[reel.id]) return s;
+      return { ...s, index: Math.min(s.index + 1, REELS.length) };
     });
+  };
 
   // Passage au récap : on élague les coups de cœur restés sur un sujet non tranché
   // (possible via « Récap » anticipé ou un Retour). Garantit coeurs ⊆ sujets votés,
@@ -144,11 +155,14 @@ export default function ReelsVote() {
           coeur={session.coeurs.includes(REELS[session.index].id)}
           coeursLeft={MAX_COEURS - session.coeurs.length}
           stats={stats}
+          currentVote={session.votes[REELS[session.index].id]}
           onVote={vote}
           onToggleCoeur={toggleCurrentCoeur}
-          onUndo={undo}
+          onPrev={goPrev}
+          onNext={goNext}
           onRecap={enterRecap}
-          canUndo={session.index > 0}
+          canPrev={session.index > 0}
+          canNext={!!session.votes[REELS[session.index].id]}
         />
       )}
 
@@ -205,6 +219,11 @@ function TopBar({
     <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b-2 border-rw-black bg-white px-5 sm:px-8">
       <div className="flex items-center gap-3">
         <Wordmark className="h-4 text-rw-black sm:h-[18px]" />
+        {client.isTest && (
+          <span className="border-2 border-rw-black bg-rw-black px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-rw-white">
+            Démo
+          </span>
+        )}
         <span className="hidden h-4 w-px bg-rw-line-subtle sm:block" />
         <span className="hidden font-mono text-[11px] uppercase tracking-wider text-rw-muted sm:block">
           Sélection reels · {salutation(client.name)}
@@ -274,6 +293,22 @@ function Intro({
         Épinglez jusqu'à <b className="text-rw-black">{MAX_COEURS} coups de cœur</b> — vos priorités de tournage.
       </p>
 
+      {/* Cadrage des attentes : on n'en tournera que 8, pas les 18 */}
+      <div className="mt-6 flex items-start gap-3 border-2 border-rw-black bg-rw-paper-subtle p-4">
+        <Clapperboard className="mt-0.5 size-5 shrink-0 text-rw-orange" strokeWidth={1.75} />
+        <p className="text-[14px] leading-relaxed text-rw-black">
+          Au final, on en tournera <b>{FINAL_COUNT} ensemble</b> — pas les 18. Vos votes, et surtout vos{" "}
+          <b>coups de cœur</b>, nous aident à choisir les meilleurs. Rien n'est figé ici : on en rediscute avant de
+          tourner.
+        </p>
+      </div>
+
+      {client.isTest && (
+        <p className="mt-4 border-l-[3px] border-rw-orange bg-rw-orange/10 px-3 py-2 text-[13px] text-rw-black">
+          <b>Démo</b> — environnement de test. Vos votes ne sont pas transmis à l'équipe.
+        </p>
+      )}
+
       <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 font-mono text-[12px] text-rw-muted">
         <span>≈ 5 MIN</span>
         <span>
@@ -297,12 +332,20 @@ function Intro({
 const cardVariants = {
   enter: { opacity: 0, scale: 0.96, y: 16 },
   center: { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 },
-  exit: (dir: ReelChoice) =>
-    dir === "tourne"
-      ? { x: 360, y: -30, rotate: 12, opacity: 0 }
-      : dir === "passe"
-        ? { x: -360, y: -30, rotate: -12, opacity: 0 }
-        : { y: 380, scale: 0.9, opacity: 0 },
+  exit: (dir: ExitKind) => {
+    switch (dir) {
+      case "tourne":
+        return { x: 360, y: -30, rotate: 12, opacity: 0 };
+      case "passe":
+        return { x: -360, y: -30, rotate: -12, opacity: 0 };
+      case "voir":
+        return { y: 380, scale: 0.9, opacity: 0 };
+      case "next":
+        return { x: -120, opacity: 0 }; // avance
+      case "prev":
+        return { x: 120, opacity: 0 }; // recule
+    }
+  },
 };
 
 function VoteDeck({
@@ -312,48 +355,58 @@ function VoteDeck({
   coeur,
   coeursLeft,
   stats,
+  currentVote,
   onVote,
   onToggleCoeur,
-  onUndo,
+  onPrev,
+  onNext,
   onRecap,
-  canUndo,
+  canPrev,
+  canNext,
 }: {
   reel: Reel;
   index: number;
-  exitDir: ReelChoice;
+  exitDir: ExitKind;
   coeur: boolean;
   coeursLeft: number;
   stats: ReturnType<typeof voteStats>;
+  currentVote: ReelChoice | undefined;
   onVote: (c: ReelChoice) => void;
   onToggleCoeur: () => void;
-  onUndo: () => void;
+  onPrev: () => void;
+  onNext: () => void;
   onRecap: () => void;
-  canUndo: boolean;
+  canPrev: boolean;
+  canNext: boolean;
 }) {
   const reduce = useReducedMotion();
 
-  // Raccourcis clavier : ← passe · → tourne · ↑/↓ à voir · c coup de cœur · ⌫ retour
+  // Clavier (bonus desktop) : ← précédent · → suivant · 1/2/3 voter · C coup de cœur.
+  // Les flèches NAVIGUENT (elles ne votent plus) — le vote se fait aux 3 boutons.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement)?.tagName;
       if (tag === "INPUT" || tag === "TEXTAREA") return;
-      // Ne pas détourner les raccourcis système (Cmd/Ctrl+C copier, Cmd+← naviguer…).
-      if (e.metaKey || e.ctrlKey || e.altKey) return;
-      if (e.key === "ArrowLeft") onVote("passe");
-      else if (e.key === "ArrowRight") onVote("tourne");
-      else if (e.key === "ArrowUp" || e.key === "ArrowDown") onVote("voir");
+      if (e.metaKey || e.ctrlKey || e.altKey) return; // laisser les raccourcis système
+      if (e.key === "ArrowLeft") {
+        if (canPrev) onPrev();
+      } else if (e.key === "ArrowRight") {
+        if (canNext) onNext();
+      } else if (e.key === "1") onVote("passe");
+      else if (e.key === "2") onVote("voir");
+      else if (e.key === "3") onVote("tourne");
       else if (e.key.toLowerCase() === "c") onToggleCoeur();
-      else if (e.key === "Backspace" && canUndo) onUndo();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onVote, onToggleCoeur, onUndo, canUndo]);
+  }, [onVote, onToggleCoeur, onPrev, onNext, canPrev, canNext]);
 
   const peek1 = REELS[index + 1];
   const peek2 = REELS[index + 2];
+  const votedMeta = currentVote ? CHOICE_BY_KEY[currentVote] : null;
 
   return (
-    <div className="mx-auto max-w-2xl px-5 pb-40 pt-6 sm:px-8">
+    <div className="mx-auto max-w-2xl px-5 pb-48 pt-6 sm:px-8">
       <ProgressBar stats={stats} index={index} />
 
       {/* Deck : carte active + 2 cartes en dessous pour l'effet de paquet */}
@@ -371,7 +424,14 @@ function VoteDeck({
             transition={reduce ? { duration: 0 } : { duration: 0.34, ease: [0.2, 0.8, 0.2, 1] }}
             className="relative z-10"
           >
-            <ReelCard reel={reel} index={index} coeur={coeur} coeursLeft={coeursLeft} onToggleCoeur={onToggleCoeur} />
+            <ReelCard
+              reel={reel}
+              index={index}
+              coeur={coeur}
+              coeursLeft={coeursLeft}
+              currentVote={currentVote}
+              onToggleCoeur={onToggleCoeur}
+            />
           </motion.div>
         </AnimatePresence>
       </div>
@@ -379,32 +439,76 @@ function VoteDeck({
       {/* Barre d'actions */}
       <div className="fixed inset-x-0 bottom-0 z-30 border-t-2 border-rw-black bg-white/95 px-4 py-3 backdrop-blur sm:px-8">
         <div className="mx-auto max-w-2xl">
-          <div className="grid grid-cols-3 gap-2 sm:gap-3">
-            <VoteButton choice="passe" onClick={() => onVote("passe")} />
-            <VoteButton choice="voir" onClick={() => onVote("voir")} />
-            <VoteButton choice="tourne" onClick={() => onVote("tourne")} />
+          {/* Statut « déjà noté » (hauteur réservée pour éviter les sauts) */}
+          <div className="mb-2 flex h-4 items-center justify-center text-center">
+            {votedMeta && (
+              <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-rw-muted">
+                Déjà noté :{" "}
+                <span className="text-rw-black">
+                  {votedMeta.emoji} {votedMeta.label}
+                </span>{" "}
+                — changez, ou continuez →
+              </span>
+            )}
           </div>
-          <div className="mt-2 flex items-center justify-between">
-            <button
-              onClick={onUndo}
-              disabled={!canUndo}
-              className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-rw-muted transition-colors hover:text-rw-black disabled:opacity-30"
-            >
-              <Undo2 className="size-3.5" /> Retour
-            </button>
-            <span className="hidden font-mono text-[10px] uppercase tracking-wider text-rw-tertiary sm:block">
-              ← passe · ↑ à voir · → je tourne · C coup de cœur
-            </span>
+
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+            <VoteButton choice="passe" active={currentVote === "passe"} onClick={() => onVote("passe")} />
+            <VoteButton choice="voir" active={currentVote === "voir"} onClick={() => onVote("voir")} />
+            <VoteButton choice="tourne" active={currentVote === "tourne"} onClick={() => onVote("tourne")} />
+          </div>
+
+          <div className="mt-2 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+            <NavButton dir="prev" label="Précédent" onClick={onPrev} disabled={!canPrev} />
             <button
               onClick={onRecap}
               className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-rw-muted transition-colors hover:text-rw-black"
             >
-              Récap <ArrowRight className="size-3.5" />
+              <Pencil className="size-3.5" /> Récap
             </button>
+            <NavButton dir="next" label="Suivant" onClick={onNext} disabled={!canNext} />
           </div>
+
+          <p className="mt-1.5 hidden text-center font-mono text-[10px] uppercase tracking-wider text-rw-tertiary sm:block">
+            ← précédent · → suivant · 1·2·3 pour voter · C coup de cœur
+          </p>
         </div>
       </div>
     </div>
+  );
+}
+
+/** Bouton de navigation entre cartes (précédent / suivant), non destructif. */
+function NavButton({
+  dir,
+  label,
+  onClick,
+  disabled,
+}: {
+  dir: "prev" | "next";
+  label: string;
+  onClick: () => void;
+  disabled: boolean;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={cn(
+        "inline-flex items-center gap-1.5 border-2 border-rw-black bg-white px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-wider text-rw-black transition-colors hover:bg-rw-paper-subtle disabled:opacity-25 disabled:hover:bg-white",
+        dir === "prev" ? "justify-self-start" : "justify-self-end",
+      )}
+    >
+      {dir === "prev" ? (
+        <>
+          <ArrowLeft className="size-3.5" /> {label}
+        </>
+      ) : (
+        <>
+          {label} <ArrowRight className="size-3.5" />
+        </>
+      )}
+    </button>
   );
 }
 
@@ -446,17 +550,23 @@ function PeekCard({ offset }: { offset: 1 | 2 }) {
   );
 }
 
-function VoteButton({ choice, onClick }: { choice: ReelChoice; onClick: () => void }) {
+function VoteButton({ choice, active, onClick }: { choice: ReelChoice; active?: boolean; onClick: () => void }) {
   const c = CHOICE_BY_KEY[choice];
   const isPrimary = choice === "tourne";
   return (
     <button
       onClick={onClick}
+      aria-pressed={active}
       className={cn(
-        "flex flex-col items-center justify-center gap-0.5 border-2 border-rw-black py-2.5 font-bold uppercase tracking-tight shadow-[var(--shadow-hard-sm)] transition-transform hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none active:translate-x-[2px] active:translate-y-[2px]",
-        isPrimary ? "bg-rw-orange text-rw-black" : "bg-white text-rw-black",
+        "relative flex flex-col items-center justify-center gap-0.5 border-2 border-rw-black py-2.5 font-bold uppercase tracking-tight shadow-[var(--shadow-hard-sm)] transition-transform hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none active:translate-x-[2px] active:translate-y-[2px]",
+        isPrimary ? "bg-rw-orange text-rw-black" : active ? "bg-rw-orange/15 text-rw-black" : "bg-white text-rw-black",
       )}
     >
+      {active && (
+        <span className="absolute right-1.5 top-1.5 grid size-4 place-items-center bg-rw-black" aria-hidden>
+          <Check className="size-3 text-rw-white" strokeWidth={4} />
+        </span>
+      )}
       <span className="text-xl leading-none" aria-hidden>
         {c.emoji}
       </span>
@@ -472,12 +582,14 @@ function ReelCard({
   index,
   coeur,
   coeursLeft,
+  currentVote,
   onToggleCoeur,
 }: {
   reel: Reel;
   index: number;
   coeur: boolean;
   coeursLeft: number;
+  currentVote?: ReelChoice;
   onToggleCoeur: () => void;
 }) {
   const st = statutMeta(reel.statutKind);
@@ -517,8 +629,11 @@ function ReelCard({
 
       {/* Corps */}
       <div className="px-5 py-5 sm:px-6 sm:py-6">
-        <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-rw-tertiary">
+        <p className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.22em] text-rw-tertiary">
           Sujet {String(index + 1).padStart(2, "0")}
+          {currentVote && (
+            <span className="text-rw-orange">· déjà noté {CHOICE_BY_KEY[currentVote].emoji}</span>
+          )}
         </p>
         <h2 className="mt-2 text-[clamp(1.5rem,4.4vw,2.15rem)] leading-[1.02]">{reel.sujet}</h2>
 
@@ -690,7 +805,8 @@ function Recap({
       <h1 className="mt-3 text-[clamp(2rem,5.5vw,3.2rem)]">Relisez, ajustez, envoyez.</h1>
       <p className="mt-3 max-w-lg text-[15px] text-rw-muted">
         {stats.decided}/{stats.total} sujets tranchés. Vous pouvez encore changer chaque vote avant d'envoyer à
-        Nicolas.
+        Nicolas. On en retiendra <b className="text-rw-black">{FINAL_COUNT} au final</b> — vos coups de cœur pèsent
+        le plus lourd.
       </p>
 
       {/* Bilan */}
@@ -886,9 +1002,18 @@ function Done({
         Merci, <span className="text-rw-orange">{salutation(client.name)}</span>.
       </h1>
       <p className="mx-auto mt-5 max-w-md text-[16px] leading-relaxed text-rw-muted">
-        Vos votes sont partis chez Nicolas — <b className="text-rw-black">{stats.tourne} sujets à tourner</b>,{" "}
-        {stats.coeurs} coup{stats.coeurs > 1 ? "s" : ""} de cœur en priorité. Il s'en sert pour bâtir le planning de
-        tournage et revient vers vous très vite.
+        {client.isTest ? (
+          <>
+            <b className="text-rw-black">Démo terminée</b> — ce parcours de test n'a rien transmis à l'équipe. Vous
+            pouvez recommencer autant de fois que vous voulez.
+          </>
+        ) : (
+          <>
+            Vos votes sont partis chez Nicolas — <b className="text-rw-black">{stats.tourne} sujets à tourner</b>,{" "}
+            {stats.coeurs} coup{stats.coeurs > 1 ? "s" : ""} de cœur en priorité. Il s'en sert pour arrêter les{" "}
+            <b className="text-rw-black">{FINAL_COUNT} reels</b> à produire et revient vers vous très vite.
+          </>
+        )}
       </p>
 
       <div className="mt-9 flex flex-wrap justify-center gap-3">

@@ -58,6 +58,9 @@ export const COMPOSITE_MAX = 95;
 /** Nombre maximum de « coups de cœur » épinglables (top des priorités de tournage). */
 export const MAX_COEURS = 3;
 
+/** Nombre de sujets qui seront finalement tournés (contrat) — cadrage des attentes. */
+export const FINAL_COUNT = 8;
+
 /* ── Les 3 choix de vote, ordonnés du négatif au positif ── */
 
 export const CHOICES: { key: ReelChoice; label: string; emoji: string }[] = [
@@ -346,6 +349,17 @@ export interface ReelsClient {
   title?: string;
   /** Nom de la prestation / du contrat, affiché en intro. */
   contrat?: string;
+  /** Environnement de démo/test : votes isolés, sans notification (cf. api/reels-vote.ts). */
+  isTest?: boolean;
+}
+
+/**
+ * Slug de test : les URL commençant par « demo » ou « test » sont un environnement
+ * de démo (pour Nicolas), séparé de l'environnement réel du client (/reels/plouton).
+ * Le serveur applique la même règle sur le slug — source de vérité (api/reels-vote.ts).
+ */
+export function isTestSlug(slug: string): boolean {
+  return /^(demo|test)/i.test(slug);
 }
 
 const REGISTRY: Record<string, ReelsClient> = {
@@ -354,6 +368,14 @@ const REGISTRY: Record<string, ReelsClient> = {
     name: "Julien",
     title: "Avocat",
     contrat: "Contrat de réalisation de reels",
+  },
+  // Environnement de démo pour Nicolas — même parcours, votes non transmis.
+  demo: {
+    slug: "demo",
+    name: "Julien",
+    title: "Avocat",
+    contrat: "Contrat de réalisation de reels",
+    isTest: true,
   },
 };
 
@@ -374,6 +396,7 @@ export function resolveReelsClient(slug: string, params: URLSearchParams): Reels
     name: params.get("n") || prettify(slug),
     title: params.get("t") || undefined,
     contrat: params.get("c") || undefined,
+    isTest: isTestSlug(slug),
   };
 }
 

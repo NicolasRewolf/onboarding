@@ -174,7 +174,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const when = new Date().toISOString();
     const dateStamp = when.slice(0, 19).replace(/[^0-9]/g, "-");
     const slug = safeSlug(data.client.slug);
-    const path = `votes/reels/${slug}/${dateStamp}.md`;
+    // Environnement de démo (Nicolas) : un slug « demo… » / « test… » écrit dans un
+    // dossier isolé et NE déclenche AUCUNE notification (issue/e-mail). L'environnement
+    // réel du client reste /reels/plouton. Le serveur est la source de vérité (le slug
+    // dans l'URL décide, pas un flag client).
+    const isTest = /^(demo|test)/i.test(slug);
+    const path = isTest
+      ? `votes/reels/_tests/${slug}/${dateStamp}.md`
+      : `votes/reels/${slug}/${dateStamp}.md`;
     const api = gh(token);
     const [owner, repo] = REPO.split("/");
 
@@ -195,35 +202,38 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const repoUrl = `https://github.com/${owner}/${repo}`;
     const fileUrl = `${repoUrl}/blob/${BRANCH}/${path}`;
 
-    // 2) Issue de notification (mention + assignation) — canal fiable, sans Resend
-    try {
-      const s = data.stats || {};
-      const issueBody = [
-        `@${NOTIFY} — nouveaux **votes reels** de **${data.client.name}** :`,
-        "",
-        `- 🔥 ${s.tourne ?? "?"} à tourner · 🤔 ${s.voir ?? "?"} à voir · ✋ ${s.passe ?? "?"} écartés · ⭐ ${data.coeurs.length} coup(s) de cœur`,
-        "",
-        data.recapMarkdown,
-        "",
-        `— [Récap complet](${fileUrl})`,
-      ].join("\n");
+    // 2) Issue de notification (mention + assignation) — canal fiable, sans Resend.
+    //    Sautée en démo : on ne veut pas de notification pour les tests de Nicolas.
+    if (!isTest) {
+      try {
+        const s = data.stats || {};
+        const issueBody = [
+          `@${NOTIFY} — nouveaux **votes reels** de **${data.client.name}** :`,
+          "",
+          `- 🔥 ${s.tourne ?? "?"} à tourner · 🤔 ${s.voir ?? "?"} à voir · ✋ ${s.passe ?? "?"} écartés · ⭐ ${data.coeurs.length} coup(s) de cœur`,
+          "",
+          data.recapMarkdown,
+          "",
+          `— [Récap complet](${fileUrl})`,
+        ].join("\n");
 
-      await api(`/repos/${REPO}/issues`, {
-        method: "POST",
-        body: JSON.stringify({
-          title: `Votes reels — ${data.client.name}`,
-          assignees: [NOTIFY],
-          labels: ["reels", "vote"],
-          body: issueBody,
-        }),
-      });
-    } catch {
-      /* la notif est un bonus : on n'échoue pas l'enregistrement pour autant */
+        await api(`/repos/${REPO}/issues`, {
+          method: "POST",
+          body: JSON.stringify({
+            title: `Votes reels — ${data.client.name}`,
+            assignees: [NOTIFY],
+            labels: ["reels", "vote"],
+            body: issueBody,
+          }),
+        });
+      } catch {
+        /* la notif est un bonus : on n'échoue pas l'enregistrement pour autant */
+      }
     }
 
-    // 3) E-mail direct via Resend (si configuré). Non bloquant.
+    // 3) E-mail direct via Resend (si configuré). Non bloquant. Sauté en démo.
     const resendKey = process.env.RESEND_API_KEY;
-    if (resendKey) {
+    if (!isTest && resendKey) {
       try {
         await fetch("https://api.resend.com/emails", {
           method: "POST",
