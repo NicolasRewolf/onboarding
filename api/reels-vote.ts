@@ -166,8 +166,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: "Votes invalides.", details: parsed.error.issues.slice(0, 3) });
     }
     const data = parsed.data;
-    const when = (data.submittedAt || new Date().toISOString()).toString();
-    const dateStamp = when.slice(0, 19).replace(/[:T]/g, "-");
+    // Horodatage du chemin = horloge serveur UNIQUEMENT. On ne laisse jamais une
+    // entrée client (submittedAt) piloter le chemin d'écriture dans le dépôt privé
+    // (cf. forfaits-flash-lead.ts qui génère `when` côté serveur, et submit.ts qui
+    // passe les segments de chemin par safeSlug/safeName). Le replace ne conserve
+    // que chiffres et tirets — sanitisation défensive même si `when` est déjà ISO.
+    const when = new Date().toISOString();
+    const dateStamp = when.slice(0, 19).replace(/[^0-9]/g, "-");
     const slug = safeSlug(data.client.slug);
     const path = `votes/reels/${slug}/${dateStamp}.md`;
     const api = gh(token);
