@@ -1,4 +1,4 @@
-// Feature « articles » — support client autonome : Me Plouton découvre les sujets
+// Feature « articles » — support client autonome : Julien découvre les sujets
 // d'articles présélectionnés par Nicolas et choisit ceux qu'il veut voir rédigés.
 // Endpoint dédié (api/articles-vote.ts), jamais api/submit (réservé au questionnaire).
 //
@@ -84,34 +84,32 @@ export const CADENCE_PAR_MOIS = 4;
 export const SERIES: Serie[] = [
   {
     key: "A",
-    titre: "Le parcours de la victime, de la plainte à l'argent",
-    promesse: "Trois articles qui se suivent : une situation, un acte, une sortie de secours.",
+    titre: "De la plainte à l'argent",
+    promesse: "Une situation, un acte, une sortie de secours.",
     effet:
-      "Le cabinet a déjà « Dépôt de plainte » en amont et trois guides CIVI/SARVI en aval — mais rien entre les deux. Cette série referme la chaîne, et aucun concurrent ne relie ces étapes.",
+      "Tu as déjà « Dépôt de plainte » en amont et les guides CIVI/SARVI en aval. Il manque le milieu : ces trois-là le remplissent.",
   },
   {
     key: "B",
-    titre: "Accident et maladie du travail : reconnaissance, taux, régime",
-    promesse: "La chronologie réelle d'un dossier, du diagnostic à l'indemnisation.",
-    effet:
-      "Les trois s'appuient sur « Faute inexcusable », publié en juin, qui devient le point d'arrivée du parcours.",
+    titre: "Accident et maladie du travail",
+    promesse: "La chronologie d'un dossier : reconnaissance, taux, régime.",
+    effet: "Les trois s'appuient sur « Faute inexcusable », publié en juin, qui devient le point d'arrivée.",
   },
   {
     key: "C",
     titre: "Qui paie quand personne ne peut payer",
-    promesse: "La pièce qui manquait au dispositif d'indemnisation du cabinet.",
-    effet:
-      "CIVI et SARVI couvrent l'infraction, l'ONIAM le médical — rien ne couvrait le défaut d'assurance sur la route.",
+    promesse: "La pièce qui manque à ton dispositif.",
+    effet: "CIVI et SARVI couvrent l'infraction, l'ONIAM le médical. Rien ne couvre le défaut d'assurance sur la route.",
   },
   {
     key: "solo",
-    titre: "Les pièces qui se suffisent à elles-mêmes",
-    promesse: "Trois sujets forts, indépendants les uns des autres.",
+    titre: "Les sujets qui se suffisent",
+    promesse: "Forts, mais indépendants les uns des autres.",
   },
   {
     key: "reserve",
     titre: "En réserve",
-    promesse: "Bons sujets, mais hors des quatre articles mensuels — à programmer si l'envie est là.",
+    promesse: "Bons sujets, hors des quatre du mois. Si l'envie est là.",
   },
 ];
 
@@ -134,7 +132,7 @@ export const SUJETS: Sujet[] = [
     pageCible: "/indemnisation-des-victimes/victimes-de-delits-ou-crimes",
     pageCibleLabel: "Victimes de délits ou crimes",
     angle:
-      "Trois responsabilités, trois juridictions, trois calendriers — dont la responsabilité civile des parents de l'auteur, qui est la seule voie qui fait réellement payer.",
+      "Trois responsabilités, trois juridictions. Celle des parents de l'auteur est la seule qui fait payer.",
     gap: "Toute la première page s'arrête au numéro 3018 et au dialogue avec l'établissement. Personne n'explique comment on obtient réparation.",
     maillage: ["Assigner l'État pour faute lourde", "Délai déraisonnable de procédure", "Dépôt de plainte", "ITT pénale"],
     vigilance:
@@ -152,7 +150,7 @@ export const SUJETS: Sujet[] = [
     pageCible: "/indemnisation-des-victimes/victimes-de-delits-ou-crimes",
     pageCibleLabel: "Victimes de délits ou crimes",
     angle:
-      "La victime a perdu la mémoire, donc la preuve — alors que la CIVI, elle, n'exige ni condamnation ni même l'identification de l'auteur. C'est la porte que personne ne montre.",
+      "Elle a perdu la mémoire, donc la preuve. Or la CIVI n'exige ni condamnation ni auteur identifié : personne ne montre cette porte.",
     gap: "La première page est entièrement sanitaire : prévention, dépistage, conduite à tenir médicale. Le droit y est absent.",
     maillage: ["Indemnisation CIVI", "SARVI ou CIVI", "Dépôt de plainte", "ITT pénale"],
     vigilance:
@@ -170,7 +168,7 @@ export const SUJETS: Sujet[] = [
     pageCible: "/indemnisation-des-victimes/accidents-de-la-route",
     pageCibleLabel: "Accidents de la route",
     angle:
-      "Le Fonds n'intervient qu'en dernier : il oppose à la victime ses propres garanties pour réduire son offre. Et son recours contre le conducteur non assuré retourne complètement le conseil quand c'est lui le client.",
+      "Le Fonds paie en dernier et oppose à la victime ses propres garanties pour baisser son offre. Et quand le client est le non-assuré, le conseil s'inverse.",
     gap: "La première page appartient au Fonds lui-même et à deux assureurs. Personne n'explique comment on conteste une offre.",
     maillage: ["Loi Badinter 85", "Piéton renversé", "Cycliste renversé", "Accident de moto"],
     vigilance: "Les délais pour saisir le Fonds seront vérifiés article par article avant d'écrire le moindre chiffre.",
@@ -187,7 +185,7 @@ export const SUJETS: Sujet[] = [
     pageCible: "/honoraires-rendez-vous",
     pageCibleLabel: "Honoraires & rendez-vous",
     angle:
-      "Le triple contraste commission d'office, aide juridictionnelle et honoraires libres — écrit depuis l'intérieur de la permanence pénale bordelaise, avec la procédure réelle auprès du bâtonnier de Bordeaux.",
+      "Commis d'office, aide juridictionnelle, honoraires libres : le tri, vu de l'intérieur de la permanence bordelaise.",
     gap: "Aucun cabinet en première page. Les seuls formulaires proposés sont ceux de Pau, Troyes, Caen et Valence — et le résumé de Google cite des vidéos TikTok faute de mieux.",
     maillage: ["Changer d'avocat en cours de procédure", "Garde à vue : droits", "Après une garde à vue", "Comparution immédiate"],
     vigilance:
@@ -205,7 +203,7 @@ export const SUJETS: Sujet[] = [
     pageCible: "/indemnisation-des-victimes/droit-et-accidents-du-travail",
     pageCibleLabel: "Droit et accidents du travail",
     angle:
-      "Tout se joue sur la charge de la preuve : au tableau, la présomption joue et le salarié n'a rien à prouver ; hors tableau, c'est à lui de démontrer le lien direct — avec le débouché naturel sur les pathologies psychiques.",
+      "Tout se joue sur la preuve : au tableau, la présomption joue ; hors tableau, c'est au salarié de démontrer le lien. Débouché naturel : le burn-out.",
     gap: "Le seul contenu de conseil de la première page s'adresse explicitement aux directions des ressources humaines.",
     maillage: ["Faute inexcusable de l'employeur", "Accident du travail : indemnisation", "Préparer son dossier médical"],
     vigilance:
@@ -223,7 +221,7 @@ export const SUJETS: Sujet[] = [
     pageCible: "/indemnisation-des-victimes/droit-et-accidents-du-travail",
     pageCibleLabel: "Droit et accidents du travail",
     angle:
-      "Le même dossier de séquelles produit deux taux et deux montants selon le régime — et le cabinet est le seul de la première page à avoir les deux jambes publiées pour les chiffrer côte à côte sur un cas unique.",
+      "Les mêmes séquelles, deux taux, deux montants selon le régime. Tu es le seul de la page à pouvoir les chiffrer côte à côte.",
     gap: "Le contraste entre les deux barèmes n'est nulle part, alors que c'est la première question que pose un client.",
     maillage: ["Faute inexcusable de l'employeur", "Accident du travail : indemnisation", "Préparer son dossier médical", "Pretium doloris"],
     vigilance:
@@ -241,7 +239,7 @@ export const SUJETS: Sujet[] = [
     pageCible: "/indemnisation-des-victimes/victimes-de-delits-ou-crimes",
     pageCibleLabel: "Victimes de délits ou crimes",
     angle:
-      "Deux gisements que personne n'occupe : le chiffrage de la demande de dommages-intérêts pièce par pièce, et le raccord vers le recouvrement quand le condamné ne paie pas.",
+      "Deux vides : combien demander, pièce par pièce — et comment être payé si le condamné ne paie pas.",
     gap: "Le résumé de Google sert déjà la procédure. Ce qu'il ne dit jamais : combien demander, et comment être payé ensuite.",
     maillage: ["Dépôt de plainte", "SARVI ou CIVI", "Indemnisation CIVI", "SARVI : récupérer ses dommages-intérêts"],
     vigilance: "Vérifier d'abord si « Dépôt de plainte » traite déjà la plainte avec constitution de partie civile.",
@@ -258,7 +256,7 @@ export const SUJETS: Sujet[] = [
     pageCible: "/indemnisation-des-victimes/victimes-de-delits-ou-crimes",
     pageCibleLabel: "Victimes de délits ou crimes",
     angle:
-      "Un tableau code par code, où le motif reçu dicte la stratégie : un « auteur inconnu » n'appelle pas la même réponse qu'une « infraction insuffisamment caractérisée » — et il ouvre la CIVI sans condition d'identification.",
+      "Un tableau code par code : « auteur inconnu » n'appelle pas la même réponse qu'« infraction insuffisamment caractérisée », et ouvre la CIVI.",
     gap: "Les concurrents expliquent les recours contre le classement. Aucun ne fait le pont vers l'indemnisation.",
     maillage: ["Dépôt de plainte", "Indemnisation CIVI", "SARVI ou CIVI", "SARVI : récupérer ses dommages-intérêts"],
     vigilance: "L'entrée se fait par les codes de motif, pas par la décision du procureur : cinq confrères y sont déjà.",
@@ -275,7 +273,7 @@ export const SUJETS: Sujet[] = [
     pageCible: "/indemnisation-des-victimes/accidents-de-la-route",
     pageCibleLabel: "Accidents de la route",
     angle:
-      "Double nature juridique : accident du travail indemnisé forfaitairement, et accident de la circulation qui ouvre, si un tiers est en cause, la réparation intégrale poste par poste.",
+      "Double nature : accident du travail au forfait, mais aussi accident de la route — donc réparation intégrale si un tiers est en cause.",
     gap: "Toute la première page raisonne en indemnités journalières et jamais en réparation intégrale.",
     maillage: ["Loi Badinter 85", "Accident du travail : indemnisation", "Piéton renversé", "Faute inexcusable (en contraste)"],
     vigilance:
@@ -292,7 +290,7 @@ export const SUJETS: Sujet[] = [
     pageCible: "/indemnisation-des-victimes/accidents-et-erreurs-medicales",
     pageCibleLabel: "Accidents et erreurs médicales",
     angle:
-      "Le seuil de gravité comme couperet de recevabilité — absent de tous les contenus de la première page — et un ancrage bordelais rare : Google affiche « CRCI Bordeaux » en encart local, sans qu'aucun cabinet bordelais n'existe sur la requête.",
+      "Le seuil de gravité, couperet d'entrée que personne n'explique. Bonus : Google affiche un encart « CRCI Bordeaux » et aucun cabinet bordelais n'y est.",
     gap: "On explique la procédure partout, jamais la condition d'entrée. C'est pourtant la première question.",
     maillage: ["Indemnisation ONIAM", "Accident médical et aléa thérapeutique", "Préparer son dossier médical", "Chirurgie esthétique ratée"],
     vigilance:
@@ -327,7 +325,7 @@ export const SUJETS: Sujet[] = [
     angle: "Aucun avocat ne s'est positionné sur la requête : angle mort complet.",
     gap: "Le sujet est traité par des cabinets d'expertise, jamais par des juristes.",
     maillage: ["Sinistre habitation : recours", "Assurance perte d'exploitation", "Sinistre auto : preuve d'achat"],
-    vigilance: "Petit volume et poumon secondaire du cabinet : à prendre si le sujet vous parle, pas par priorité.",
+    vigilance: "Petit volume, sujet secondaire : à prendre si ça te parle, pas par priorité.",
     serie: "reserve",
     periode: "Hors cadence",
   },
@@ -358,8 +356,10 @@ export function sujetsDeSerie(key: SerieKey): Sujet[] {
 
 /* ─────────────────────────── Clients ─────────────────────────── */
 
+// On tutoie Julien (proche) : pas de « Maître » dans l'interface — le récap envoyé
+// à Nicolas reprend ce même prénom.
 const REGISTRY: Record<string, ArticlesClient> = {
-  plouton: { slug: "plouton", name: "Me Plouton", title: "Cabinet Plouton", isTest: false },
+  plouton: { slug: "plouton", name: "Julien", title: "Cabinet Plouton", isTest: false },
 };
 
 const isTestSlug = (slug: string) => /^(demo|test)/i.test(slug);

@@ -183,20 +183,17 @@ function Intro() {
     <section className="border-2 border-rw-black bg-white p-6 shadow-[var(--shadow-hard)] sm:p-8">
       <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-rw-muted">Le prochain trimestre</p>
       <h1 className="mt-3 text-3xl font-bold leading-[1.1] tracking-tight sm:text-4xl">
-        {SUJETS.length} sujets sur la table.
+        {SUJETS.length} sujets.
         <br />
-        Dites-moi lesquels vous ressemblent.
+        Dis-moi lesquels te parlent.
       </h1>
       <p className="mt-5 max-w-2xl text-[16px] leading-relaxed text-rw-muted">
-        Chaque sujet a été choisi sur trois critères : des gens le cherchent vraiment sur Google, aucun confrère ne
-        traite l'angle du côté de la victime, et il pousse vers une de vos pages d'expertise. Le reste — le fond
-        juridique, les sources, la rédaction — c'est mon travail.
-      </p>
-      <p className="mt-3 max-w-2xl text-[16px] leading-relaxed text-rw-muted">
-        Vous n'avez qu'à trancher. Rythme tenu : <strong className="text-rw-black">{CADENCE_PAR_MOIS} articles par mois</strong>.
+        Tous sont cherchés sur Google, aucun confrère ne les traite côté victime, et chacun pousse vers une de tes
+        pages. Le fond et la rédaction, c'est pour moi — toi tu tranches.{" "}
+        <strong className="text-rw-black">{CADENCE_PAR_MOIS} par mois.</strong>
       </p>
 
-      <div className="mt-7 grid gap-3 sm:grid-cols-3">
+      <div className="mt-6 grid gap-3 sm:grid-cols-3">
         {CHOICES.slice()
           .reverse()
           .map((c) => (
@@ -215,8 +212,8 @@ function Intro() {
       <p className="mt-4 flex items-start gap-2 text-[14px] leading-relaxed text-rw-muted">
         <Star aria-hidden className="mt-0.5 size-4 shrink-0 fill-rw-orange text-rw-black" />
         <span>
-          L'étoile épingle vos <strong className="text-rw-black">{MAX_COEURS} priorités</strong> — celles que j'écris en
-          premier. Rien n'est envoyé tant que vous ne cliquez pas sur le bouton en bas.
+          L'étoile = tes <strong className="text-rw-black">{MAX_COEURS} priorités</strong>, celles que j'écris en
+          premier. Rien ne part tant que tu n'as pas cliqué en bas.
         </span>
       </p>
     </section>
@@ -419,7 +416,7 @@ function MotLibre({ note, onChange }: { note: string; onChange: (v: string) => v
     <section className="mt-12 border-2 border-rw-black bg-white p-5 shadow-[var(--shadow-hard)] sm:p-6">
       <label htmlFor="mot" className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-rw-muted">
         <PenLine aria-hidden className="size-3.5" />
-        Un sujet vous manque ? Une remarque ?
+        Un sujet te manque ? Une remarque ?
       </label>
       <textarea
         id="mot"
@@ -526,8 +523,8 @@ function BarreBasse({
           {status.k === "error"
             ? status.msg
             : rienChoisi
-              ? "Retenez au moins un sujet pour envoyer"
-              : `${stats.tranches}/${stats.total} sujets tranchés — vous pouvez revenir plus tard, tout est gardé`}
+              ? "Retiens au moins un sujet pour envoyer"
+              : `${stats.tranches}/${stats.total} tranchés — tu peux revenir plus tard, tout est gardé`}
         </p>
       </div>
     </div>
@@ -577,9 +574,9 @@ function EcranFin({
         <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-rw-muted">C'est envoyé</p>
         <h1 className="mt-3 text-3xl font-bold leading-tight tracking-tight">Merci {salutation(client.name)}.</h1>
         <p className="mt-4 text-[16px] leading-relaxed text-rw-muted">
-          J'ai bien reçu vos {stats.oui} sujet{stats.oui > 1 ? "s" : ""}
-          {stats.coeurs > 0 && <>, dont {stats.coeurs} en priorité</>}. Je m'occupe du fond, des sources et de la
-          rédaction — vous relirez avant publication.
+          J'ai tes {stats.oui} sujet{stats.oui > 1 ? "s" : ""}
+          {stats.coeurs > 0 && <>, dont {stats.coeurs} en priorité</>}. Je m'occupe du fond et de la rédaction, tu
+          reliras avant publication.
         </p>
 
         <ul className="mt-7 space-y-2">
