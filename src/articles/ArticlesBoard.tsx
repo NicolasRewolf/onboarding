@@ -6,7 +6,6 @@ import { Wordmark } from "@/components/brand/Wordmark";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
-  CADENCE_PAR_MOIS,
   CHOICES,
   CHOICE_BY_KEY,
   MAX_COEURS,
@@ -189,8 +188,7 @@ function Intro() {
       </h1>
       <p className="mt-5 max-w-2xl text-[16px] leading-relaxed text-rw-muted">
         Tous sont cherchés sur Google, aucun confrère ne les traite côté victime, et chacun pousse vers une de tes
-        pages. Le fond et la rédaction, c'est pour moi — toi tu tranches.{" "}
-        <strong className="text-rw-black">{CADENCE_PAR_MOIS} par mois.</strong>
+        pages.
       </p>
 
       <div className="mt-6 grid gap-3 sm:grid-cols-3">
