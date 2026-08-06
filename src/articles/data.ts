@@ -76,9 +76,6 @@ export const CHOICE_BY_KEY: Record<ArticleChoice, (typeof CHOICES)[number]> = {
 /** Nombre de coups de cœur épinglables — les sujets à écrire en premier. */
 export const MAX_COEURS = 3;
 
-/** Cadence de production tenue par Nicolas. */
-export const CADENCE_PAR_MOIS = 4;
-
 /* ─────────────────────────── Séries ─────────────────────────── */
 
 export const SERIES: Serie[] = [
