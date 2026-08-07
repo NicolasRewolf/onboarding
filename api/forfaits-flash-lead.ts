@@ -31,7 +31,7 @@ const ExtraSchema = z.object({
   price: z.number().nonnegative(),
 });
 
-/** Attribution cooked (cf. src/tracking/cooked.ts) — jointe à la conversion. */
+/** Attribution optionnelle jointe à la conversion (UTM, gclid, référent). */
 const AttributionSchema = z.object({
   utm_source: z.string().max(200).nullable().optional(),
   utm_medium: z.string().max(200).nullable().optional(),
@@ -232,7 +232,7 @@ function buildMarkdown(d: z.infer<typeof LeadSchema>, when: string): string {
           : a.referrer
             ? `Référent (${a.referrer})`
             : "Direct / inconnu";
-    lines.push("## Attribution (cooked)");
+    lines.push("## Attribution");
     lines.push("");
     lines.push(`- **Canal** : ${channel}`);
     if (a.utm_campaign) lines.push(`- **Campagne** : ${a.utm_campaign}`);

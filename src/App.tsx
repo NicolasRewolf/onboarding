@@ -7,12 +7,13 @@ import ReelsVote from "./reels/ReelsVote";
 import ArticlesBoard from "./articles/ArticlesBoard";
 import DispoParticipant from "./dispos/DispoParticipant";
 import DispoRecap from "./dispos/DispoRecap";
-import CookedTracker from "./tracking/CookedTracker";
+import Avocats from "./avocats/Avocats";
+import { Confidentialite, MentionsLegales } from "./legal/Legal";
+import ConsentBanner from "./consent/ConsentBanner";
 
 export default function App() {
   return (
     <BrowserRouter>
-      <CookedTracker />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/c/:slug" element={<Onboarding />} />
@@ -21,8 +22,12 @@ export default function App() {
         <Route path="/articles/:slug" element={<ArticlesBoard />} />
         <Route path="/dispo/:slug" element={<DispoParticipant />} />
         <Route path="/dispo/:slug/recap" element={<DispoRecap />} />
+        <Route path="/avocats" element={<Avocats />} />
+        <Route path="/mentions-legales" element={<MentionsLegales />} />
+        <Route path="/confidentialite" element={<Confidentialite />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <ConsentBanner />
     </BrowserRouter>
   );
 }

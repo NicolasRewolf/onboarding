@@ -14,6 +14,44 @@
       href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500&family=Playfair+Display:wght@600&family=Fraunces:wght@500&family=Inter+Tight:wght@600&family=Manrope:wght@600&family=Space+Grotesk:wght@600&family=Sora:wght@600&family=Syne:wght@700&family=Unbounded:wght@600&family=Bricolage+Grotesque:wght@600&display=swap"
       rel="stylesheet"
     />
+    <!-- Google tag (gtag.js) — un seul chargement, deux destinations :
+         · G-CDKNNNF4NX  = GA4 (propriété rewolf.studio) → audience et comportement
+         · AW-11144920628 = Google Ads → conversions de la plaquette /avocats
+         Même domaine racine que www.rewolf.studio : aucune config inter-domaines nécessaire. -->
+    <script>
+      // Consent Mode v2 — refus par défaut (CNIL) AVANT tout chargement de balise.
+      // Aucun cookie n'est déposé tant que le visiteur n'a pas accepté.
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("consent", "default", {
+        ad_storage: "denied",
+        ad_user_data: "denied",
+        ad_personalization: "denied",
+        analytics_storage: "denied",
+        functionality_storage: "granted",
+        security_storage: "granted",
+        wait_for_update: 500,
+      });
+      // Choix déjà exprimé lors d'une visite précédente : on le rejoue tout de suite.
+      try {
+        if (localStorage.getItem("rw_consent") === "granted") {
+          gtag("consent", "update", {
+            ad_storage: "granted",
+            ad_user_data: "granted",
+            ad_personalization: "granted",
+            analytics_storage: "granted",
+          });
+        }
+      } catch (e) {
+        /* localStorage indisponible : on reste sur le refus par défaut */
+      }
+      gtag("js", new Date());
+      gtag("config", "G-CDKNNNF4NX");
+      gtag("config", "AW-11144920628");
+    </script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-CDKNNNF4NX"></script>
   </head>
   <body>
     <div id="root"></div>
