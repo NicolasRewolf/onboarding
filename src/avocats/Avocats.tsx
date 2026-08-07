@@ -6,6 +6,7 @@ import { Wordmark } from "@/components/brand/Wordmark";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ouvrirReglagesCookies } from "@/consent/consent";
+import Formulaire from "./Formulaire";
 import {
   BLOCS,
   CHIFFRES,
@@ -530,7 +531,13 @@ function Contact() {
           perdre un an.
         </p>
 
-        <div className="mt-10 grid gap-5 sm:grid-cols-2">
+        <div className="mt-10">
+          <Formulaire />
+        </div>
+
+        <p className="mt-10 rw-eyebrow text-rw-black/60">Ou directement</p>
+
+        <div className="mt-4 grid gap-5 sm:grid-cols-2">
           {[CONTACT.nicolas, CONTACT.elise].map((p) => (
             <div key={p.email} className="border-2 border-rw-black bg-rw-white p-6">
               <p className="text-[1.15rem] font-extrabold uppercase leading-none tracking-tight">{p.nom}</p>
