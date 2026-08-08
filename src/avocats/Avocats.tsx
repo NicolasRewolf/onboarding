@@ -30,12 +30,12 @@ const MAILTO = (email: string) =>
   `mailto:${email}?subject=${encodeURIComponent("Visibilité de mon cabinet | REWOLF")}`;
 
 /**
- * Conversions Google Ads — compte AW-11144920628. Deux actions distinctes,
- * pour que le rapport dise qui a appelé et qui a écrit :
- *  - formulaire et e-mails → « Formulaire Contact »
- *  - téléphones → « Annonce Appel Direct » (valeur 1 €, définie à la création)
+ * Conversions Google Ads — compte AW-11144920628. Deux actions dédiées à la
+ * plaquette avocats, pour que le rapport dise qui a appelé et qui a écrit :
+ *  - formulaire et e-mails → « Contact avocats (formulaire + e-mail) », 700 €
+ *  - téléphones → « Annonce Appel Direct », 1 €
  */
-const CONVERSION_FORMULAIRE = "AW-11144920628/moS8CIXfs9IZELT8p8Ip";
+const CONVERSION_FORMULAIRE = "AW-11144920628/mBTHCM-XrN4cELT8p8Ip";
 const CONVERSION_APPEL = "AW-11144920628/vx34COKEmd4cELT8p8Ip";
 
 /**

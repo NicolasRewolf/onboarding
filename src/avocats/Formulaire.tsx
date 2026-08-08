@@ -11,7 +11,8 @@ import { cn } from "@/lib/utils";
  * formulaire long — chaque champ supplémentaire doit se justifier.
  */
 
-const CONVERSION_ID = "AW-11144920628/moS8CIXfs9IZELT8p8Ip";
+// Action « Contact avocats (formulaire + e-mail) » — 700 €, une seule par clic.
+const CONVERSION_ID = "AW-11144920628/mBTHCM-XrN4cELT8p8Ip";
 
 type Etat =
   | { kind: "idle" }
