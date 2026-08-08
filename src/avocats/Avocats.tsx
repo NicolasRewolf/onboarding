@@ -420,6 +420,14 @@ function References() {
           missions d'acquisition — nous les citons pour ce qu'ils disent de notre exigence graphique, pas
           pour laisser croire que nous référençons des avionneurs.
         </p>
+        <a
+          href="https://www.rewolf.studio"
+          target="_blank"
+          rel="noopener"
+          className="mt-5 inline-flex items-center gap-2 text-[15px] font-extrabold uppercase tracking-tight underline decoration-rw-orange decoration-2 underline-offset-4 hover:text-rw-orange"
+        >
+          Voir ces travaux sur rewolf.studio ↗
+        </a>
       </div>
     </section>
   );
@@ -588,6 +596,8 @@ function Footer() {
           </p>
           <a
             href="https://www.rewolf.studio"
+            target="_blank"
+            rel="noopener"
             className="font-mono text-[10px] uppercase tracking-[0.14em] text-rw-orange hover:underline"
           >
             rewolf.studio ↗
