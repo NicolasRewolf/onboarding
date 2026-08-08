@@ -30,13 +30,13 @@ const MAILTO = (email: string) =>
   `mailto:${email}?subject=${encodeURIComponent("Visibilité de mon cabinet | REWOLF")}`;
 
 /**
- * Conversion Google Ads — compte AW-11144920628.
- * Le libellé pointe pour l'instant sur l'action « Formulaire Contact » existante.
- * Pour isoler la campagne avocats : créer une action dédiée dans Google Ads
- * (Objectifs → Conversions → Nouvelle action → Site web → manuelle) et remplacer
- * la seule constante ci-dessous par le nouveau libellé.
+ * Conversions Google Ads — compte AW-11144920628. Deux actions distinctes,
+ * pour que le rapport dise qui a appelé et qui a écrit :
+ *  - formulaire et e-mails → « Formulaire Contact »
+ *  - téléphones → « Annonce Appel Direct » (valeur 1 €, définie à la création)
  */
-const CONVERSION_ID = "AW-11144920628/moS8CIXfs9IZELT8p8Ip";
+const CONVERSION_FORMULAIRE = "AW-11144920628/moS8CIXfs9IZELT8p8Ip";
+const CONVERSION_APPEL = "AW-11144920628/vx34COKEmd4cELT8p8Ip";
 
 /**
  * Signale la conversion au clic sur un e-mail ou un téléphone.
@@ -44,10 +44,18 @@ const CONVERSION_ID = "AW-11144920628/moS8CIXfs9IZELT8p8Ip";
  * externe sans décharger la page, la requête a donc le temps de partir.
  */
 function cta(name: string, section: string) {
+  const appel = name.startsWith("tel_");
   return () => {
-    // Google Ads — conversion facturable, c'est elle qui pilote la campagne.
-    window.gtag?.("event", "conversion", { send_to: CONVERSION_ID });
-    // GA4 — même action, pour l'analyse du parcours (quel CTA, quelle section).
+    // Google Ads — l'action dépend du canal : appel ou contact écrit.
+    window.gtag?.(
+      "event",
+      "conversion",
+      appel
+        ? { send_to: CONVERSION_APPEL, value: 1.0, currency: "EUR" }
+        : { send_to: CONVERSION_FORMULAIRE },
+    );
+    // GA4 — même événement partout ; `method` garde le canal exact
+    // (tel_nicolas, tel_elise, email_nicolas, email_elise).
     window.gtag?.("event", "generate_lead", { method: name, section });
   };
 }
