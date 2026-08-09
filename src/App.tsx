@@ -8,6 +8,7 @@ import ArticlesBoard from "./articles/ArticlesBoard";
 import DispoParticipant from "./dispos/DispoParticipant";
 import DispoRecap from "./dispos/DispoRecap";
 import Avocats from "./avocats/Avocats";
+import Cremaillere from "./cremaillere/Cremaillere";
 import { Confidentialite, MentionsLegales } from "./legal/Legal";
 import ConsentBanner from "./consent/ConsentBanner";
 
@@ -23,6 +24,7 @@ export default function App() {
         <Route path="/dispo/:slug" element={<DispoParticipant />} />
         <Route path="/dispo/:slug/recap" element={<DispoRecap />} />
         <Route path="/avocats" element={<Avocats />} />
+        <Route path="/cremaillere" element={<Cremaillere />} />
         <Route path="/mentions-legales" element={<MentionsLegales />} />
         <Route path="/confidentialite" element={<Confidentialite />} />
         <Route path="*" element={<Navigate to="/" replace />} />
