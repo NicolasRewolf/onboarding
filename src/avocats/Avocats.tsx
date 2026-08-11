@@ -511,9 +511,16 @@ function Tarif() {
         <div className="space-y-5 text-[15px] leading-relaxed text-rw-muted lg:col-span-7">
           <p>
             Ensuite, si ça vous convient, des forfaits de 3, 6 ou 12 mois — le nôtre avec le cabinet Plouton
-            tourne par blocs de six. Le site, quand il est à refaire, démarre à{" "}
-            <b className="text-rw-black">{formatNombre(TARIF.siteAPartirDe)} € HT</b> et peut se payer en
-            plusieurs fois.
+            tourne par blocs de six. Si le site est à refaire, c'est{" "}
+            <b className="text-rw-black">{formatNombre(TARIF.site)} € HT</b>, prix ferme, payable en plusieurs
+            fois —{" "}
+            <Link
+              to="/avocats/site-internet"
+              className="font-bold text-rw-black underline decoration-rw-orange decoration-2 underline-offset-4"
+            >
+              le détail est ici
+            </Link>
+            .
           </p>
           <p>
             <b className="text-rw-black">Ce que ça vous coûte en temps</b>, parce que personne ne le dit

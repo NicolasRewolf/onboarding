@@ -48,7 +48,11 @@ export const TARIF = {
   mensuel: 600,
   articlesParMois: 4,
   prixArticle: 150,
-  siteAPartirDe: 2500,
+  /** Prix ferme du site complet — montant du dernier devis remis à un cabinet
+   *  d'avocats (juin 2026). L'ancien « à partir de 2 500 € » ne correspondait à
+   *  aucun projet livré : un prix d'appel démenti au premier téléphone coûte
+   *  plus cher qu'un prix élevé assumé. Détail sur /avocats/site-internet. */
+  site: 7500,
 } as const;
 
 export type Bloc = {
