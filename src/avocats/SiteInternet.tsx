@@ -131,8 +131,8 @@ function Hero() {
         <p className="rw-eyebrow text-rw-orange">REWOLF · Création de sites d'avocats</p>
 
         <h1 className="mt-5 max-w-4xl text-rw-white text-[clamp(2rem,4.8vw,3.9rem)] leading-[0.98]">
-          Un site internet d'avocat, dessiné, écrit, développé et référencé{" "}
-          <span className="text-rw-orange">par la même main.</span>
+          Un site d'avocat dessiné, écrit, développé et référencé{" "}
+          <span className="text-rw-orange">sans un seul passage de main.</span>
         </h1>
 
         <p className="mt-7 max-w-2xl text-[16px] leading-relaxed text-rw-white/70 sm:text-[17px]">
@@ -240,7 +240,7 @@ function Prix() {
             </p>
             <p className="mt-4 text-[15px] leading-relaxed text-rw-muted">
               Les sept pièces ci-dessus, mises en ligne. C'est le montant du dernier devis que nous avons
-              remis à un cabinet d'avocats.
+              remis.
             </p>
             <ul className="mt-5 space-y-2 border-t-2 border-rw-line-subtle pt-4 text-[14px] leading-relaxed">
               <li className="flex gap-2.5">
@@ -265,9 +265,9 @@ function Prix() {
             le même prix : il n'y a rien à migrer.
           </p>
           <p>
-            <b className="text-rw-black">Ce qui fait varier ce chiffre</b>, dit avant qu'on nous le demande :
-            le nombre de matières traitées, le nombre d'avocats à présenter, l'existence ou non d'un site à
-            reprendre. Si votre projet sort du cadre — version bilingue, plus de vingt pages, espace client,
+            <b className="text-rw-black">Trois éléments peuvent le déplacer</b>, autant les nommer avant
+            qu'on nous le demande : le nombre de matières traitées, le nombre d'avocats à présenter,
+            l'existence ou non d'un site à reprendre. Si votre projet sort du cadre — version bilingue, plus de vingt pages, espace client,
             reprise de plusieurs centaines d'articles — nous vous le disons avec le chiffre avant de
             commencer. Jamais après.
           </p>
@@ -424,9 +424,9 @@ function VotreTemps() {
         ))}
       </div>
       <p className="mt-8 max-w-2xl text-[15px] leading-relaxed text-rw-muted">
-        <b className="text-rw-black">Vous n'écrivez rien.</b> Nous rédigeons, vous corrigez. Si vous nous
-        laissez sans réponse trois semaines, le site sort trois semaines plus tard — c'est la seule sanction,
-        et elle vaut dans les deux sens.
+        <b className="text-rw-black">Vous n'écrivez rien.</b> Nous rédigeons, vous corrigez. Trois semaines
+        sans réponse de votre part, trois semaines de retard à la livraison : c'est la seule conséquence, et
+        elle joue dans les deux sens.
       </p>
     </Section>
   );
@@ -436,7 +436,7 @@ function VotreTemps() {
 
 function LaMain() {
   return (
-    <Section eyebrow="06 — La main" titre={<>La même main du début à la fin.</>} variant="subtle">
+    <Section eyebrow="06 — La main" titre={<>Aucun passage de main, du début à la fin.</>} variant="subtle">
       <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
         <div className="space-y-5 text-[15px] leading-relaxed text-rw-muted">
           <p>
@@ -454,9 +454,10 @@ function LaMain() {
         <div className="rw-hard bg-rw-white p-6">
           <p className="rw-eyebrow text-rw-tertiary">Et si vous voulez nous quitter</p>
           <p className="mt-4 text-[15px] leading-relaxed text-rw-muted">
-            Le nom de domaine, les contenus, les images et les accès sont à votre nom dès le premier jour.
-            Nous travaillons sur des outils que vous pouvez reprendre seul — c'est précisément pour ça que
-            nous les choisissons. Rien ne s'éteint le jour où vous arrêtez.
+            Le nom de domaine, l'hébergement et les accès Google sont ouverts à votre nom dès le premier
+            jour, et les droits sur les textes et les photographies vous sont cédés par écrit. Nous
+            travaillons sur des outils que vous pouvez reprendre seul — c'est précisément pour cela que nous
+            les choisissons. Le jour où vous arrêtez, rien ne se coupe et rien ne se renégocie.
           </p>
         </div>
       </div>
@@ -477,8 +478,8 @@ function Deontologie() {
         </p>
         <p className="text-[16px] leading-relaxed text-rw-muted">
           Concrètement : pas de témoignage client, pas de taux de réussite, pas de comparaison avec un
-          confrère. Si une formulation vous paraît discutable au regard de vos obligations, elle saute — sans
-          discussion et sans supplément.
+          confrère. Si une formulation vous paraît douteuse au regard de vos obligations, nous la retirons.
+          Sans débat et sans supplément.
         </p>
       </div>
     </Section>
@@ -492,12 +493,12 @@ function Exclusivite() {
     <Section eyebrow="08 — Une règle" titre={<>Un cabinet par barreau et par matière.</>} variant="subtle">
       <div className="grid gap-8 lg:grid-cols-2">
         <p className="text-[16px] leading-relaxed text-rw-muted">
-          Nous n'accompagnons pas deux cabinets qui se disputent les mêmes justiciables sur le même ressort.
-          Ce serait vous vendre une visibilité que nous construirions simultanément contre vous.
+          Nous ne travaillons pas pour deux cabinets qui se disputent les mêmes justiciables dans le même
+          ressort. Ce serait vous vendre une visibilité que nous construirions simultanément contre vous.
         </p>
         <p className="text-[16px] leading-relaxed text-rw-muted">
-          C'est une contrainte commerciale que nous nous imposons, et la raison pour laquelle nous
-          n'accompagnons qu'un petit nombre de cabinets. Si votre barreau et votre matière sont déjà pris,
+          C'est une contrainte commerciale que nous nous imposons, et la raison pour laquelle nous ne
+          travaillons qu'avec un petit nombre de cabinets. Si votre barreau et votre matière sont déjà pris,
           vous le saurez dès le premier message.
         </p>
       </div>
@@ -559,12 +560,13 @@ function Contact() {
       <div className="mx-auto max-w-6xl px-5 py-14 sm:px-8 sm:py-16">
         <p className="rw-eyebrow">11 — Parlons-en</p>
         <h2 className="mt-4 max-w-3xl text-[clamp(1.9rem,4.2vw,3rem)] leading-[1]">
-          Dites-nous votre barreau et votre matière. On vous dit franchement si c'est jouable.
+          Dites-nous votre barreau et votre matière. Nous vous dirons si la place est prenable — y compris
+          quand elle ne l'est pas.
         </h2>
         <p className="mt-5 max-w-2xl text-[15px] leading-relaxed text-rw-black/75">
           Premier échange sans engagement, trente minutes. Si votre marché est saturé ou si votre site actuel
-          tient la route, nous vous le dirons — c'est arrivé, et ça nous évite à tous les deux de perdre six
-          semaines.
+          remplit son office, nous vous le dirons — c'est arrivé, et cela nous évite à tous les deux de perdre
+          six semaines.
         </p>
 
         <div className="mt-10">

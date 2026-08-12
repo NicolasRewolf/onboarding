@@ -53,7 +53,7 @@ export const PIECES: Piece[] = [
     num: "04",
     titre: "La prise de contact",
     texte:
-      "Un formulaire qui qualifie la demande — matière, urgence, coordonnées — et la trie automatiquement. Prise de rendez-vous en ligne si vous la voulez.",
+      "Un formulaire qui qualifie la demande — matière, urgence, coordonnées — et la trie automatiquement. Les messages arrivent dans votre boîte, pas dans la nôtre : nous n'avons accès ni aux demandes ni aux pièces jointes. Le visiteur est invité à s'en tenir à l'objet de son rendez-vous sans exposer son affaire en ligne — le secret vous engage dès le premier contact, y compris quand c'est lui qui en dit trop.",
   },
   {
     num: "05",
@@ -71,7 +71,7 @@ export const PIECES: Piece[] = [
     num: "07",
     titre: "La visibilité Google",
     texte:
-      "Balisage complet, données structurées, reprise de votre fiche Google, outils de suivi installés, et migration de vos anciennes adresses sans perdre une page.",
+      "Balisage complet, données structurées, reprise de votre fiche d'établissement Google, outils de suivi installés, et migration de vos anciennes URL sans perdre une page.",
   },
 ];
 
@@ -92,13 +92,13 @@ export const VERIFICATIONS: Verification[] = [
     num: "02",
     titre: "Ouvrez votre site sur votre téléphone",
     texte:
-      "Comptez les secondes avant que la page s'affiche, puis essayez d'appeler le cabinet. Si le numéro n'est pas cliquable en deux gestes, vous perdez des appels le soir et le week-end.",
+      "Chronométrez l'affichage de votre page d'accueil, puis appelez votre propre cabinet. Si le numéro n'est pas appelable d'un geste, l'appel se reporte sur le confrère suivant — et ceux qui se perdent sont les appels du soir et du week-end, ceux que l'on passe dans l'urgence. Posez ensuite la question qui vient juste après : qui décroche pendant que vous êtes à l'audience, et que dit cette personne ?",
   },
   {
     num: "03",
     titre: "Demandez à une intelligence artificielle",
     texte:
-      "Demandez à ChatGPT ou à la réponse automatique de Google de vous recommander un avocat de votre matière dans votre ville. Regardez qui sort. C'est déjà un canal de recommandation.",
+      "Demandez à ChatGPT ou à l'aperçu IA de Google de vous recommander un avocat de votre matière dans votre ville. Notez les cabinets cités, et si le vôtre en est. C'est déjà un canal de recommandation.",
   },
 ];
 
@@ -111,7 +111,7 @@ export const TEMPS: Temps[] = [
     titre: "Cadrage",
     duree: "1 heure",
     texte:
-      "Au téléphone. Votre barreau, vos matières, ce que vous voulez qu'on dise et surtout ce que vous refusez qu'on écrive.",
+      "Au téléphone. Votre barreau, vos matières, ce que vous voulez que nous disions et surtout ce que vous refusez que nous écrivions.",
   },
   {
     num: "02",
@@ -125,14 +125,14 @@ export const TEMPS: Temps[] = [
     titre: "Relecture juridique",
     duree: "1 heure 30",
     texte:
-      "Vous êtes le seul à pouvoir valider un texte de droit signé de votre nom. Vous corrigez, vous ne rédigez pas.",
+      "Vous êtes le seul à pouvoir valider un texte de droit signé de votre nom. Vous corrigez, vous ne rédigez pas. Si le cabinet compte plusieurs associés, désignez celui qui tranche : un texte relu par quatre confrères n'est jamais publié, et ce n'est pas le texte qui est en cause.",
   },
   {
     num: "04",
     titre: "Recette avant mise en ligne",
     duree: "1 heure",
     texte:
-      "Vous parcourez le site fini, vous listez ce qui cloche, on corrige avant de publier.",
+      "Vous parcourez le site achevé, vous relevez ce qui doit être repris, nous corrigeons avant la mise en ligne.",
   },
 ];
 
@@ -145,11 +145,11 @@ export const FAQ: Question[] = [
   },
   {
     q: "J'ai déjà un site. Faut-il tout refaire ?",
-    r: "Pas toujours. On regarde d'abord ce qui se classe déjà et ce qui reçoit des visites : ça se garde et ça se migre. Le reste se refait. Si votre site actuel tient la route, on vous le dira plutôt que de vous vendre une refonte.",
+    r: "Pas toujours. Nous identifions d'abord les pages qui se classent et reçoivent des visites : elles sont conservées et leurs URL migrées telles quelles. Le reste est repris. Si votre site actuel remplit son office, nous vous le dirons plutôt que de vous vendre une refonte.",
   },
   {
     q: "Sur quelle technologie ?",
-    r: "Wix Studio ou Framer selon le projet. Ce sont des outils que vous pouvez reprendre en main seul — c'est justement pourquoi on les choisit. Le nom de domaine, les contenus et les accès sont à votre nom dès le premier jour.",
+    r: "Wix Studio ou Framer selon le projet. Ce sont des outils que vous pouvez reprendre en main seul — c'est justement pourquoi nous les choisissons. Le nom de domaine, les contenus et les accès sont à votre nom dès le premier jour.",
   },
   {
     q: "Qui écrit les textes ?",
@@ -157,10 +157,10 @@ export const FAQ: Question[] = [
   },
   {
     q: "Au bout de combien de temps voit-on des résultats ?",
-    r: "Le site est en ligne en six semaines. La visibilité dans Google, elle, se construit sur des trimestres : le cabinet dont vous lisez les chiffres a mis cinq trimestres pour passer de la 18ᵉ à la 7ᵉ place. Personne ne peut vous promettre mieux honnêtement.",
+    r: "Le site est en ligne en six semaines. La visibilité dans Google, elle, se construit sur des trimestres : le cabinet dont vous lisez les chiffres a mis cinq trimestres pour passer de la 18ᵉ à la 7ᵉ place. Aucun prestataire honnête ne vous promettra davantage.",
   },
   {
     q: "Et si je veux partir ?",
-    r: "Vous partez avec tout : domaine, contenus, images, accès. Il n'y a pas d'abonnement obligatoire ni de contenu qui s'éteint si vous arrêtez.",
+    r: "Le nom de domaine, l'hébergement et les accès Google sont ouverts à votre nom dès le premier jour, et les droits sur les textes et les photographies vous sont cédés par écrit. Le jour où vous arrêtez, rien ne se coupe et rien ne se renégocie.",
   },
 ];

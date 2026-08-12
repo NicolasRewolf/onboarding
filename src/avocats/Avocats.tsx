@@ -135,10 +135,12 @@ function Hero() {
           </h1>
 
           <p className="mt-7 max-w-xl text-[16px] leading-relaxed text-rw-white/70 sm:text-[17px]">
-            Nous avons repris le site du <b className="text-rw-white">cabinet Plouton</b>, pénalistes, en{" "}
-            {CHIFFRES.repriseAnnee}. Depuis, il a reçu{" "}
-            <b className="text-rw-white">{formatNombre(CHIFFRES.clics16Mois)} visites</b> depuis la recherche
-            Google. Voici comment — et ce que nous pouvons faire pour votre cabinet.
+            Nous avons repris le site du <b className="text-rw-white">cabinet Plouton</b>, pénaliste, en{" "}
+            {CHIFFRES.repriseAnnee}. Il a reçu depuis{" "}
+            <b className="text-rw-white">{formatNombre(CHIFFRES.clics16Mois)} visites</b> venues de la
+            recherche Google. Ces visites ne sont pas des dossiers : nous répondons des positions et du
+            trafic, c'est-à-dire de ce que nous maîtrisons. Ce qui se joue ensuite au téléphone et au premier
+            rendez-vous vous appartient.
           </p>
 
           <div className="mt-9 flex flex-wrap gap-3">
@@ -299,8 +301,8 @@ function Preuve() {
         </p>
         <p>
           <b className="text-rw-black">Et c'est un seul cabinet.</b> Nous n'allons pas prétendre qu'un cas
-          fait une jurisprudence. Nous accompagnons des marques depuis des années, des cabinets d'avocats
-          depuis dix-huit mois. Si vous cherchez un prestataire qui aligne vingt références dans votre
+          fait une jurisprudence. Nous travaillons pour des marques depuis des années, pour des cabinets
+          d'avocats depuis dix-huit mois. Si vous cherchez un prestataire qui aligne vingt références dans votre
           matière, ce n'est pas nous — et vous avez raison de le demander.
         </p>
       </div>
@@ -326,13 +328,14 @@ function Methode() {
     <Section
       id="methode"
       eyebrow="02 — Ce qu'on fait"
-      titre={<>Tout au même endroit. C'est le point.</>}
+      titre={<>Cinq métiers, deux interlocuteurs. Ce n'est pas un détail d'organisation.</>}
       variant="subtle"
     >
       <p className="max-w-2xl text-[16px] leading-relaxed text-rw-muted">
-        Un cabinet n'a pas envie de coordonner un graphiste, un développeur, un rédacteur, un référenceur et un
-        photographe. Nous sommes deux, nous faisons les cinq, et c'est ce qui rend la cohérence possible — un
-        site qui remonte dans Google mais qui trahit votre positionnement ne sert à rien.
+        Coordonner un graphiste, un développeur, un rédacteur, un référenceur et un photographe est un
+        travail à part entière. Il n'est pas facturable, et il vous revient. Nous sommes deux et nous tenons
+        les cinq rôles : un site qui gagne des places mais donne de votre cabinet une image fausse ne vous
+        sert pas, il vous dessert.
       </p>
 
       <div className="mt-10 grid gap-5 md:grid-cols-2">
@@ -358,6 +361,18 @@ function Methode() {
             </ul>
           </motion.article>
         ))}
+      </div>
+
+      <div className="mt-10 border-l-2 border-rw-orange pl-6">
+        <p className="max-w-2xl text-[16px] leading-relaxed text-rw-black">
+          Être bien placé attire aussi ce que vous ne cherchez pas : des appels hors de votre matière, des
+          dossiers sans moyens, des demandes de consultation gratuite. Un site doit donc trier autant qu'il
+          attire.
+        </p>
+        <p className="mt-4 max-w-2xl text-[16px] leading-relaxed text-rw-muted">
+          Matière, ressort, mode de saisine et principe de facturation sont annoncés avant l'appel, pas
+          pendant. Un formulaire qui écarte coûte moins cher qu'un rendez-vous qui n'aboutit pas.
+        </p>
       </div>
     </Section>
   );
@@ -386,9 +401,17 @@ function Deontologie() {
               substantielle.
             </p>
             <p>
-              Ces règles sont mal connues des prestataires. « Meilleur avocat de Bordeaux », « cabinet
-              spécialisé » : ce sont des formules que Google apprécie et que votre Ordre n'apprécie pas. En
-              cas de difficulté, ce n'est pas l'agence qui répond — c'est vous.
+              Ces règles sont mal connues des prestataires. « Meilleur avocat de Bordeaux » tombe sous
+              l'interdiction de tout élément comparatif posée par l'article 10 ; « spécialiste » et
+              « spécialisé » supposent un certificat de spécialisation, alors qu'on peut nommer ses domaines
+              d'activité sans jamais les employer. Google récompense ces deux formules ; votre Ordre les
+              sanctionne. En cas de difficulté, ce n'est pas l'agence qui répond — c'est vous.
+            </p>
+            <p>
+              Reste la question que personne ne pose à voix haute : que dira le confrère qui vous voit passer
+              devant lui ? Nous n'écrivons jamais contre un cabinet nommé, nous ne comparons pas, nous ne
+              commentons pas une décision où un confrère reste identifiable. Votre visibilité doit pouvoir se
+              justifier devant votre bâtonnier sans que vous ayez à la défendre.
             </p>
             <p className="border-l-2 border-rw-orange pl-5 text-rw-white">
               Nous travaillons dans le cadre, pas contre lui. Chaque texte publié vous est soumis avant mise en
@@ -437,16 +460,16 @@ function References() {
 
 function Exclusivite() {
   return (
-    <Section eyebrow="04 — Une règle" titre={<>Un cabinet par barreau et par spécialité.</>}>
+    <Section eyebrow="04 — Une règle" titre={<>Un cabinet par barreau et par matière.</>}>
       <div className="grid gap-8 lg:grid-cols-2">
         <p className="text-[16px] leading-relaxed text-rw-muted">
-          Nous n'accompagnons pas deux cabinets qui se disputent les mêmes justiciables sur le même ressort. Ce
-          serait vous vendre une visibilité que nous construirions simultanément contre vous.
+          Nous ne travaillons pas pour deux cabinets qui se disputent les mêmes justiciables dans le même
+          ressort. Ce serait vous vendre une visibilité que nous construirions simultanément contre vous.
         </p>
         <p className="text-[16px] leading-relaxed text-rw-muted">
-          C'est une contrainte commerciale que nous nous imposons, et la raison pour laquelle nous
-          n'accompagnons qu'un petit nombre de cabinets. Si votre barreau et votre domaine sont déjà pris, nous
-          vous le disons dès le premier échange.
+          C'est une contrainte commerciale que nous nous imposons, et la raison pour laquelle nous ne
+          travaillons qu'avec un petit nombre de cabinets. Si votre barreau et votre matière sont déjà pris,
+          nous vous le disons dès le premier échange.
         </p>
       </div>
     </Section>
@@ -503,7 +526,8 @@ function Tarif() {
               Soit {TARIF.prixArticle} € l'article.
             </p>
             <p className="mt-5 border-t-2 border-rw-line-subtle pt-4 text-[14px] font-bold leading-snug">
-              Le premier mois est sans engagement. Vous jugez sur pièces, pas sur promesse.
+              Vous arrêtez à la fin du mois de votre choix, le premier compris. Vous jugez sur pièces, pas sur
+              promesse.
             </p>
           </div>
         </div>
@@ -523,10 +547,12 @@ function Tarif() {
             .
           </p>
           <p>
-            <b className="text-rw-black">Ce que ça vous coûte en temps</b>, parce que personne ne le dit
-            jamais : quatre articles par mois, c'est environ une heure de relecture pour vous. Rien n'est
-            publié sans votre validation écrite, donc cette heure n'est pas optionnelle. Si vous ne l'avez
-            pas, le dispositif ne fonctionne pas et nous préférons vous le dire maintenant.
+            <b className="text-rw-black">Ce que le dispositif vous coûte en temps</b>, puisque personne ne le
+            chiffre jamais : quatre articles par mois représentent environ une heure de relecture. Rien n'est
+            publié sans votre validation écrite : cette heure n'est donc pas facultative. Elle ne tombera
+            jamais au bon moment — nous travaillons avec un mois d'avance et vous relisez par lots, pour
+            qu'une semaine d'audiences n'arrête pas le dispositif. Si vous ne l'avez pas, le dispositif ne
+            fonctionne pas et nous préférons vous le dire maintenant.
           </p>
           <p className="border-l-2 border-rw-orange pl-5 text-rw-black">
             Nous n'avons pas de tarif caché ni de devis à géométrie variable. C'est le prix que paie le
@@ -546,7 +572,8 @@ function Contact() {
       <div className="mx-auto max-w-6xl px-5 py-14 sm:px-8 sm:py-16">
         <p className="rw-eyebrow">07 — Parlons-en</p>
         <h2 className="mt-4 max-w-3xl text-[clamp(1.9rem,4.2vw,3rem)] leading-[1]">
-          Dites-nous votre barreau et votre domaine. On vous dit franchement si c'est jouable.
+          Dites-nous votre barreau et votre matière. Nous vous dirons si la place est prenable — y compris
+          quand elle ne l'est pas.
         </h2>
         <p className="mt-5 max-w-2xl text-[15px] leading-relaxed text-rw-black/75">
           Premier échange sans engagement, trente minutes. Si votre marché est saturé ou si le volume de

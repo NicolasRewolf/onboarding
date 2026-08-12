@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
  * Formulaire de prise de contact de la plaquette /avocats.
  *
  * Cinq champs obligatoires, pas un de plus : c'est exactement la promesse faite
- * un peu plus haut sur la page (« dites-nous votre barreau et votre domaine »).
+ * un peu plus haut sur la page (« dites-nous votre barreau et votre matière »).
  * L'audit des dix personas a montré que ces lecteurs abandonnent au moindre
  * formulaire long — chaque champ supplémentaire doit se justifier.
  */
@@ -87,7 +87,7 @@ export default function Formulaire() {
         </p>
         <p className="mt-3 text-[15px] leading-relaxed text-rw-muted">
           Nous vous répondons sous 48 heures ouvrées, et nous commencerons par vous dire si votre barreau
-          et votre domaine sont libres. Si ce n'est pas le cas, vous le saurez dès le premier message.
+          et votre matière sont libres. Si ce n'est pas le cas, vous le saurez dès le premier message.
         </p>
       </div>
     );

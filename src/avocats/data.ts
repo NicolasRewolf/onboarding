@@ -95,7 +95,7 @@ export const BLOCS: Bloc[] = [
     num: "03",
     titre: "Contenu & référencement",
     chapo:
-      "Le cœur du dispositif. Des articles qu'un avocat accepte de signer, écrits sur les questions que vos futurs clients posent réellement à Google.",
+      "Le cœur du dispositif. Des articles qu'un avocat accepte de signer, écrits sur les questions que vos futurs clients posent réellement à Google. Ils traitent de la règle, jamais de vos dossiers et jamais de vous : c'est ce qui les rend publiables sans avoir le sentiment de se vendre, et ce qui vous tient à distance du secret.",
     items: [
       "Stratégie de mots-clés et de contenus",
       "Rédaction juridique long format",
@@ -124,7 +124,7 @@ export const PROCESS: Etape[] = [
     num: "01",
     titre: "Cadrage",
     texte:
-      "Un échange, puis un questionnaire structuré. On identifie vos domaines porteurs, votre ressort géographique et ce que cherchent vos futurs clients.",
+      "Un échange, puis un questionnaire structuré. Nous identifions vos matières porteuses, votre ressort et ce que cherchent vos futurs clients.",
     duree: "1 à 2 semaines",
   },
   {
