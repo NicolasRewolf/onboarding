@@ -31,20 +31,41 @@ const NAV = [
 const MAILTO = (email: string) =>
   `mailto:${email}?subject=${encodeURIComponent("Site internet de mon cabinet | REWOLF")}`;
 
-// Mêmes actions de conversion que la plaquette /avocats — compte AW-11144920628.
-const CONVERSION_FORMULAIRE = "AW-11144920628/mBTHCM-XrN4cELT8p8Ip";
+// Compte AW-11144920628. L'action « Contact avocats » (mBTHCM-XrN4cELT8p8Ip) n'est plus
+// déclenchée ici : elle appartient au seul envoi du formulaire, dans Formulaire.tsx.
 const CONVERSION_APPEL = "AW-11144920628/vx34COKEmd4cELT8p8Ip";
 
+/** Vrai seulement sur un appareil qui sait passer un appel : un `tel:` cliqué sur
+ *  un ordinateur n'appelle personne, il ouvre au mieux une application de visio. */
+function peutAppeler() {
+  return (
+    typeof window !== "undefined" &&
+    window.matchMedia?.("(hover: none) and (pointer: coarse)").matches === true
+  );
+}
+
+/**
+ * Suivi des appels à l'action de contact.
+ *
+ * Règle : une CONVERSION Google Ads ne se déclenche que pour un acte qui est
+ * réellement une prise de contact.
+ *  · Formulaire envoyé  → conversion « Contact avocats » (voir Formulaire.tsx)
+ *  · Clic téléphone     → conversion « Appel » UNIQUEMENT sur mobile
+ *  · Clic e-mail        → aucune conversion : ouvrir son client mail n'est pas écrire
+ *
+ * Tout le reste part en événement GA4 `generate_lead`, utile pour le comportement,
+ * sans polluer la colonne Conversions — la seule qu'on regardera le 30 septembre.
+ */
 function cta(name: string, section: string) {
   const appel = name.startsWith("tel_");
   return () => {
-    window.gtag?.(
-      "event",
-      "conversion",
-      appel
-        ? { send_to: CONVERSION_APPEL, value: 1.0, currency: "EUR" }
-        : { send_to: CONVERSION_FORMULAIRE },
-    );
+    if (appel && peutAppeler()) {
+      window.gtag?.("event", "conversion", {
+        send_to: CONVERSION_APPEL,
+        value: 1.0,
+        currency: "EUR",
+      });
+    }
     window.gtag?.("event", "generate_lead", { method: name, section });
   };
 }
@@ -613,7 +634,13 @@ function Contact() {
  */
 function BarreMobile() {
   return (
-    <div className="sticky bottom-0 z-40 border-t-2 border-rw-black bg-rw-white md:hidden">
+    // `--rw-consent-h` est publiée par le bandeau de consentement tant qu'il est
+    // affiché : sans ce décalage, la barre disparaissait dessous — précisément pour
+    // le visiteur venu de la publicité, qui n'a encore rien choisi.
+    <div
+      style={{ bottom: "var(--rw-consent-h, 0px)" }}
+      className="sticky z-40 border-t-2 border-rw-black bg-rw-white md:hidden"
+    >
       <div className="grid grid-cols-2 gap-px bg-rw-black">
         <a
           href={`tel:${CONTACT.nicolas.telHref}`}

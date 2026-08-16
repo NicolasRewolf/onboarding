@@ -45,7 +45,12 @@ const LeadSchema = z.object({
   telephone: z.string().max(40).optional().default(""),
   message: z.string().max(4000).optional().default(""),
   attribution: AttributionSchema.optional(),
-  // Champ leurre : rempli uniquement par un robot. Jamais visible d'un humain.
+  /** Champ leurre courant. Nom volontairement opaque : « website », « email » ou « url »
+   *  font partie du vocabulaire de l'autofill et des gestionnaires de mots de passe,
+   *  qui les remplissent même avec autocomplete="off". `rw_hp` ne ressemble à rien. */
+  rw_hp: z.string().max(200).optional().default(""),
+  /** Ancien nom du leurre. Conservé le temps que les caches navigateur tournent :
+   *  un visiteur servi par l'ancien bundle poste encore ce champ. */
   website: z.string().max(200).optional().default(""),
 });
 
@@ -157,19 +162,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const raw = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
     const parsed = LeadSchema.safeParse(raw);
     if (!parsed.success) {
+      // On journalise les CHEMINS des champs fautifs, jamais leurs valeurs (RGPD).
+      console.warn(
+        "[avocats-lead] formulaire rejeté par la validation, champs :",
+        parsed.error.issues.map((i) => i.path.join(".")).join(", "),
+      );
       return res
         .status(400)
         .json({ error: "Formulaire invalide.", details: parsed.error.issues.slice(0, 3) });
     }
     const data = parsed.data;
 
-    // Robot : on accuse réception sans rien enregistrer.
-    if (data.website.trim()) return res.status(200).json({ ok: true });
+    // Leurre rempli : très probablement un robot, mais PAS forcément.
+    // Le champ s'appelait « website », un nom que les gestionnaires de mots de passe et
+    // l'autofill des navigateurs remplissent volontiers malgré autocomplete="off".
+    // On ne jette donc plus rien : le lead part en quarantaine et reste consultable.
+    const suspect = Boolean(data.rw_hp.trim() || data.website.trim());
 
     const when = new Date().toISOString();
     const dateStamp = when.slice(0, 19).replace(/[:T]/g, "-");
     const slug = `${dateStamp}-${slugify(`${data.cabinet}-${data.barreau}`)}`;
-    const path = `leads/avocats/${slug}.md`;
+    const path = suspect
+      ? `leads/avocats/_suspects/${slug}.md`
+      : `leads/avocats/${slug}.md`;
+
+    if (suspect) {
+      console.warn(
+        `[avocats-lead] leurre rempli — mise en quarantaine dans ${path} ` +
+          `(champ rw_hp=${JSON.stringify(data.rw_hp.slice(0, 40))}, ` +
+          `website=${JSON.stringify(data.website.slice(0, 40))})`,
+      );
+    }
     const api = gh(token);
     const [owner, repo] = REPO.split("/");
 
@@ -188,6 +211,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const leadUrl = `https://github.com/${owner}/${repo}/blob/${BRANCH}/${path}`;
+
+    // Les fiches en quarantaine sont écrites mais ne déclenchent ni e-mail ni issue :
+    // on garde la protection anti-spam sans jamais rien détruire. À relire de temps en temps.
+    if (suspect) {
+      console.warn(`[avocats-lead] quarantaine écrite, notifications ignorées — ${leadUrl}`);
+      return res.status(200).json({ ok: true });
+    }
 
     // E-mail direct (bonus, non bloquant)
     const resendKey = process.env.RESEND_API_KEY;
@@ -208,8 +238,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             text: markdown,
           }),
         });
-      } catch {
-        /* l'enregistrement GitHub fait déjà foi */
+      } catch (e) {
+        // L'enregistrement GitHub fait déjà foi, mais on veut savoir que le mail est tombé.
+        console.error("[avocats-lead] Resend a échoué :", e instanceof Error ? e.message : e);
       }
     }
 
@@ -228,13 +259,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           ].join("\n"),
         }),
       });
-    } catch {
-      /* non bloquant */
+    } catch (e) {
+      console.error("[avocats-lead] issue de notification échouée :", e instanceof Error ? e.message : e);
     }
 
+    console.log(`[avocats-lead] lead enregistré — ${leadUrl}`);
     return res.status(200).json({ ok: true });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Erreur inconnue";
+    console.error("[avocats-lead] échec :", message);
     return res.status(500).json({ error: `Envoi impossible : ${message}` });
   }
 }

@@ -35,7 +35,8 @@ const MAILTO = (email: string) =>
  *  - formulaire et e-mails → « Contact avocats (formulaire + e-mail) », 700 €
  *  - téléphones → « Annonce Appel Direct », 1 €
  */
-const CONVERSION_FORMULAIRE = "AW-11144920628/mBTHCM-XrN4cELT8p8Ip";
+// L'action « Contact avocats » (mBTHCM-XrN4cELT8p8Ip) n'est plus déclenchée ici :
+// elle appartient au seul envoi du formulaire, dans Formulaire.tsx.
 const CONVERSION_APPEL = "AW-11144920628/vx34COKEmd4cELT8p8Ip";
 
 /**
@@ -43,17 +44,28 @@ const CONVERSION_APPEL = "AW-11144920628/vx34COKEmd4cELT8p8Ip";
  * On ne bloque pas la navigation : `mailto:` et `tel:` ouvrent une application
  * externe sans décharger la page, la requête a donc le temps de partir.
  */
+/** Vrai seulement sur un appareil qui sait passer un appel : un `tel:` cliqué sur
+ *  un ordinateur n'appelle personne. */
+function peutAppeler() {
+  return (
+    typeof window !== "undefined" &&
+    window.matchMedia?.("(hover: none) and (pointer: coarse)").matches === true
+  );
+}
+
 function cta(name: string, section: string) {
   const appel = name.startsWith("tel_");
   return () => {
-    // Google Ads — l'action dépend du canal : appel ou contact écrit.
-    window.gtag?.(
-      "event",
-      "conversion",
-      appel
-        ? { send_to: CONVERSION_APPEL, value: 1.0, currency: "EUR" }
-        : { send_to: CONVERSION_FORMULAIRE },
-    );
+    // Google Ads — une conversion ne se déclenche que pour un acte de contact réel :
+    // un appel depuis un mobile. Ouvrir son client mail n'est pas écrire, et un `tel:`
+    // sur ordinateur n'appelle personne : ces deux cas ne comptent plus.
+    if (appel && peutAppeler()) {
+      window.gtag?.("event", "conversion", {
+        send_to: CONVERSION_APPEL,
+        value: 1.0,
+        currency: "EUR",
+      });
+    }
     // GA4 — même événement partout ; `method` garde le canal exact
     // (tel_nicolas, tel_elise, email_nicolas, email_elise).
     window.gtag?.("event", "generate_lead", { method: name, section });

@@ -20,8 +20,15 @@ type Etat =
   | { kind: "ok" }
   | { kind: "erreur"; message: string };
 
-/** Attribution publicitaire lue dans l'URL, sans cookie ni stockage. */
-function attribution() {
+/**
+ * Attribution publicitaire, lue dans l'URL sans cookie ni stockage.
+ *
+ * Capturée au CHARGEMENT DU MODULE, pas à la soumission : la page est une SPA, et
+ * toute navigation interne (clic sur une ancre, retour arrière) réécrit `location.search`
+ * et effaçait le `gclid`. On perdait alors le seul lien entre un lead et la campagne —
+ * c'est-à-dire la seule façon de savoir si Google Ads produit quelque chose.
+ */
+const ATTRIBUTION = (() => {
   if (typeof window === "undefined") return undefined;
   const q = new URLSearchParams(window.location.search);
   return {
@@ -34,7 +41,7 @@ function attribution() {
     referrer: document.referrer || null,
     landing_url: window.location.href,
   };
-}
+})();
 
 export default function Formulaire() {
   const [etat, setEtat] = useState<Etat>({ kind: "idle" });
@@ -56,8 +63,8 @@ export default function Formulaire() {
           email: String(fd.get("email") || ""),
           telephone: String(fd.get("telephone") || ""),
           message: String(fd.get("message") || ""),
-          website: String(fd.get("website") || ""),
-          attribution: attribution(),
+          rw_hp: String(fd.get("rw_hp") || ""),
+          attribution: ATTRIBUTION,
         }),
       });
 
@@ -117,14 +124,20 @@ export default function Formulaire() {
           id="message"
           name="message"
           rows={4}
-          className="mt-2 w-full border-2 border-rw-black bg-rw-white p-3 text-[15px] leading-relaxed outline-none focus-visible:outline-2 focus-visible:outline-rw-orange"
+          /* text-base (16 px) et pas moins : en deçà, Safari iOS zoome à la première
+             frappe et le formulaire saute sous le doigt. */
+          className="mt-2 w-full border-2 border-rw-black bg-rw-white p-3 text-base leading-relaxed outline-none focus-visible:outline-2 focus-visible:outline-rw-orange"
         />
       </div>
 
-      {/* Leurre anti-robot : hors écran, jamais atteint au clavier. */}
+      {/* Leurre anti-robot : hors écran, jamais atteint au clavier.
+          Le nom ne doit ressembler à AUCUN champ connu de l'autofill : il s'appelait
+          « website », que les gestionnaires de mots de passe remplissent volontiers
+          malgré autocomplete="off" — un lead ainsi marqué était détruit en silence.
+          Côté serveur, un leurre rempli part désormais en quarantaine, jamais à la poubelle. */}
       <input
         type="text"
-        name="website"
+        name="rw_hp"
         tabIndex={-1}
         autoComplete="off"
         aria-hidden="true"
@@ -188,7 +201,8 @@ function Champ({
         id={nom}
         name={nom}
         required={requis}
-        className="mt-2 w-full border-2 border-rw-black bg-rw-white px-3 py-2.5 text-[15px] outline-none focus-visible:outline-2 focus-visible:outline-rw-orange"
+        /* text-base (16 px) et pas moins : voir le commentaire du textarea — Safari iOS. */
+        className="mt-2 w-full border-2 border-rw-black bg-rw-white px-3 py-2.5 text-base outline-none focus-visible:outline-2 focus-visible:outline-rw-orange"
         {...rest}
       />
     </div>

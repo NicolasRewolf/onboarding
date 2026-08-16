@@ -1,7 +1,16 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ecouterOuverture, enregistrerChoix, lireChoix } from "./consent";
+
+/**
+ * Hauteur du bandeau, publiée sur `:root` sous `--rw-consent-h`.
+ * Les barres d'action collées en bas de page (p. ex. la barre d'appel mobile de
+ * /avocats/site-internet) s'en servent pour se poser AU-DESSUS du bandeau au lieu
+ * de disparaître dessous — c'est-à-dire exactement pour le visiteur qui arrive de
+ * la publicité et n'a encore rien choisi.
+ */
+const VAR_HAUTEUR = "--rw-consent-h";
 
 /**
  * Bandeau de consentement CNIL.
@@ -16,8 +25,28 @@ export default function ConsentBanner() {
     return ecouterOuverture(() => setVisible(true));
   }, []);
 
+  // Mesure le bandeau et publie sa hauteur ; la remet à zéro dès qu'il disparaît.
+  const mesurer = useCallback((el: HTMLDivElement | null) => {
+    const racine = document.documentElement;
+    if (!el) {
+      racine.style.setProperty(VAR_HAUTEUR, "0px");
+      return;
+    }
+    const publier = () => racine.style.setProperty(VAR_HAUTEUR, `${el.offsetHeight}px`);
+    publier();
+    const ro = new ResizeObserver(publier);
+    ro.observe(el);
+  }, []);
+
+  useEffect(() => {
+    // Filet de sécurité : si le composant est démonté sans passer par `decider`
+    // (changement de route, par exemple), la variable ne doit pas rester bloquée.
+    return () => document.documentElement.style.setProperty(VAR_HAUTEUR, "0px");
+  }, []);
+
   function decider(choix: "granted" | "denied") {
     enregistrerChoix(choix);
+    document.documentElement.style.setProperty(VAR_HAUTEUR, "0px");
     setVisible(false);
   }
 
@@ -32,9 +61,10 @@ export default function ConsentBanner() {
           initial={{ y: 24, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.25 }}
+          ref={mesurer}
           role="dialog"
           aria-label="Consentement aux cookies de mesure"
-          className="fixed inset-x-0 bottom-0 z-50 border-t-2 border-rw-black bg-rw-white p-4 sm:p-5"
+          className="fixed inset-x-0 bottom-0 z-50 border-t-2 border-rw-black bg-rw-white p-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:p-5"
         >
           <div className="mx-auto flex max-w-5xl flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <p className="max-w-2xl text-[14px] leading-relaxed text-rw-muted">
