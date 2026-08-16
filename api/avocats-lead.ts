@@ -221,9 +221,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // E-mail direct (bonus, non bloquant)
     const resendKey = process.env.RESEND_API_KEY;
-    if (resendKey) {
+    if (!resendKey) {
+      console.warn("[avocats-lead] RESEND_API_KEY absente — aucun e-mail envoyé");
+    } else {
       try {
-        await fetch("https://api.resend.com/emails", {
+        const envoi = await fetch("https://api.resend.com/emails", {
           method: "POST",
           headers: {
             Authorization: `Bearer ${resendKey}`,
@@ -238,9 +240,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             text: markdown,
           }),
         });
+        // `fetch` ne lève PAS sur un statut d'erreur : sans ce test, un envoi refusé
+        // par Resend (clé morte, domaine non vérifié, destinataire interdit sur le
+        // domaine de test) ne laissait aucune trace. C'est exactement ce qui nous a
+        // fait conclure à tort que la clé n'était pas configurée.
+        if (!envoi.ok) {
+          const detail = await envoi.text().catch(() => "");
+          console.error(
+            `[avocats-lead] Resend a refusé l'envoi — HTTP ${envoi.status} ` +
+              `(de « ${LEAD_FROM} » vers « ${LEAD_TO} ») : ${detail.slice(0, 500)}`,
+          );
+        } else {
+          console.log(`[avocats-lead] e-mail envoyé à ${LEAD_TO}`);
+        }
       } catch (e) {
-        // L'enregistrement GitHub fait déjà foi, mais on veut savoir que le mail est tombé.
-        console.error("[avocats-lead] Resend a échoué :", e instanceof Error ? e.message : e);
+        console.error(
+          "[avocats-lead] Resend injoignable :",
+          e instanceof Error ? e.message : e,
+        );
       }
     }
 
