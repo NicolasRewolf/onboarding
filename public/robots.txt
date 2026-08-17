@@ -1,0 +1,27 @@
+# onboarding.rewolf.studio
+#
+# Ce domaine héberge des supports clients. La plupart des routes sont privées
+# (questionnaires de cadrage, votes, disponibilités) et portent `noindex`.
+# Seules les deux pages publicitaires sont ouvertes à l'indexation.
+#
+# Avant le 17 août 2026 ce fichier n'existait pas : la réécriture SPA renvoyait
+# la coquille HTML de l'application, et Google recevait une page web là où il
+# demandait un robots.txt.
+
+User-agent: *
+Allow: /avocats
+Allow: /avocats/site-internet
+Disallow: /c/
+Disallow: /dispo/
+Disallow: /reels/
+Disallow: /articles/
+Disallow: /forfaits-flash
+Disallow: /cremaillere
+
+# AdsBot n'obéit pas aux règles génériques : il lui faut une section explicite.
+# Sans elle, l'évaluation des pages de destination des annonces peut être gênée.
+User-agent: AdsBot-Google
+Allow: /
+
+User-agent: AdsBot-Google-Mobile
+Allow: /
