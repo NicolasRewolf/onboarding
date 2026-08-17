@@ -5,6 +5,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import "./styles/globals.css";
 import Avocats from "./avocats/Avocats";
 import SiteInternet from "./avocats/SiteInternet";
+import Referencement from "./avocats/Referencement";
 
 /**
  * Entrée de rendu serveur — utilisée UNIQUEMENT par `scripts/prerender.mjs`
@@ -33,6 +34,7 @@ export function render(url: string): string {
         <Routes>
           <Route path="/avocats" element={<Avocats />} />
           <Route path="/avocats/site-internet" element={<SiteInternet />} />
+          <Route path="/avocats/referencement" element={<Referencement />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </StaticRouter>

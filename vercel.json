@@ -3,6 +3,7 @@
   "rewrites": [
     { "source": "/avocats", "destination": "/avocats/index.html" },
     { "source": "/avocats/site-internet", "destination": "/avocats/site-internet/index.html" },
+    { "source": "/avocats/referencement", "destination": "/avocats/referencement/index.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

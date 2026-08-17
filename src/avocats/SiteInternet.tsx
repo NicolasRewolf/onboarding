@@ -683,10 +683,16 @@ function Footer() {
         </div>
         <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 border-t border-rw-white/15 pt-5">
           <Link
-            to="/avocats"
+            to="/avocats/referencement"
             className="font-mono text-[10px] uppercase tracking-[0.14em] text-rw-white/55 hover:text-rw-orange"
           >
             Référencement & contenu
+          </Link>
+          <Link
+            to="/avocats"
+            className="font-mono text-[10px] uppercase tracking-[0.14em] text-rw-white/55 hover:text-rw-orange"
+          >
+            Tous les métiers
           </Link>
           <Link
             to="/mentions-legales"

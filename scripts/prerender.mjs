@@ -42,6 +42,15 @@ const PAGES = [
       "qualifiant, référencement. Studio à Bordeaux, cabinets partout en France.",
   },
   {
+    route: "/avocats/referencement",
+    fichier: "avocats/referencement/index.html",
+    titre: "Référencement et contenu juridique pour avocats — REWOLF, Bordeaux",
+    description:
+      "Référencement de cabinet d'avocats : quatre articles juridiques par mois, 600 € HT " +
+      "par mois, premier mois sans engagement. Un cabinet pénaliste passé de la 18e à la 7e " +
+      "place Google en cinq trimestres — chiffres Search Console vérifiables.",
+  },
+  {
     route: "/avocats",
     fichier: "avocats/index.html",
     titre: "Communication et référencement pour cabinets d'avocats — REWOLF",
