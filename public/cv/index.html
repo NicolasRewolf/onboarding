@@ -75,6 +75,9 @@
   transition-duration: var(--modal-open-dur);
 }
 .skill-tabs { position: relative; }
+@media (min-width: 901px) {
+  .skill-tabs { display: none; }
+}
 .skill-tabs button[aria-pressed=true]::after { content: none; }
 .skill-indicator {
   position: absolute;
@@ -146,16 +149,16 @@
         <h2>Tout est lié.</h2>
         <p class="section-intro"><span class="desktop-text">Un point, une pratique. Un lien, son champ d’action.<br>Explorez les points pour retrouver une réalisation.</span><span class="mobile-text">Choisissez un champ d’action pour découvrir ses pratiques et les projets qui les illustrent.</span></p>
         <div class="skill-layout">
-          <div class="chart-wrap"><svg id="skill-chart" viewBox="0 0 760 680" role="img" aria-labelledby="chart-title chart-desc"><title id="chart-title">Vingt pratiques reliées à cinq champs d’action</title><desc id="chart-desc">Image de marque, direction artistique, solutions numériques, IA et automatisation, growth et mesure. Chaque point ouvre un projet qui illustre la pratique. Les cinq champs contiennent chacun quatre pratiques, sans note de maîtrise.</desc></svg><div id="chart-points"></div></div>
+          <div class="chart-wrap"><svg id="skill-chart" viewBox="0 0 760 680" role="img" aria-labelledby="chart-title chart-desc"><title id="chart-title">Carte des compétences</title><desc id="chart-desc">Image de marque, direction artistique, solutions numériques, IA et automatisation, growth et mesure. Chaque point ouvre un projet qui illustre la pratique.</desc></svg><div id="chart-points"></div></div>
           <div class="skill-detail" aria-live="polite"><p class="eyebrow" id="skill-kicker">Champ d’action</p><h3 id="skill-title"></h3><p id="skill-copy"></p><ul id="skill-list"></ul><div id="skill-cases"></div></div>
         </div>
-        <div class="skill-tabs" aria-label="Choisir un champ d’action" id="skill-tabs" hidden></div>
+        <div class="skill-tabs" aria-label="Choisir un champ d’action" id="skill-tabs"></div>
       </section>
 
       <section id="projets" class="region projects" data-title="Projets" tabindex="-1">
         <div class="region-head"><span>La preuve par le projet.</span><span>MISSIONS CHOISIES</span></div>
         <div class="project-heading"><h2>Des problèmes.<br>Des réponses concrètes.</h2><p>Du premier échange à la livraison.<br>Voici mon rôle, mes choix<br>et ce qui a été réalisé.</p></div>
-        <div id="project-filters" class="filters" aria-label="Filtrer les projets"></div>
+        <div id="project-filters" class="filters" aria-label="Filtrer les projets" hidden></div>
         <div id="project-list" class="project-list"></div>
         <p id="project-count" class="caption" aria-live="polite"></p>
       </section>
@@ -168,11 +171,9 @@
       </section>
 
       <section id="outils" class="region tools" data-title="Outils" tabindex="-1">
-        <div class="region-head"><span>Les outils dont je me sers au quotidien.</span><span></span></div>
-        <h2>Le bon outil.<br>Pour le bon problème.</h2>
-        <p class="section-intro">Du dessin à la mise en ligne, puis au suivi.</p>
+        <div class="region-head"><span>Au quotidien.</span><span>OUTILS</span></div>
+        <h2>Les outils dont<br>je me sers au quotidien.</h2>
         <div id="tool-list"></div>
-        <div class="language"><span class="eyebrow">Langues</span><p>Français, langue maternelle.<br>Anglais pratiqué en contexte professionnel, chez KSB et à Londres.</p></div>
       </section>
 
       <section id="approche" class="region approach" data-title="Façon de travailler" tabindex="-1">
@@ -433,7 +434,7 @@ window.CV = {
         "Wix Studio",
         "WordPress"
       ],
-      "note": "Du dessin de l’interface jusqu’au site en ligne."
+      "note": "Maquettes, sites et mises en ligne."
     },
     {
       "title": "Data, pubs & quotidien",
@@ -499,7 +500,7 @@ window.CV = {
 
   const fields = [
     { id:'marque', title:'Image de marque', short:'Marque', angle:-90, copy:'Comprendre un projet, trouver ce qui le distingue et donner une cohérence à sa façon de se présenter.', points:[['Plateforme','chaff'],['Identité','pattern'],['Positionnement','cafeincup'],['Signature','pattern']], projects:['chaff','pattern','cafeincup'] },
-    { id:'da', title:'Direction artistique', short:'Direction artistique', angle:-18, copy:'Donner forme à une intention. Articuler typographie, image, interfaces et son, puis tenir cette direction jusqu’à la réalisation.', points:[['Webdesign','plouton'],['Présentation','dassault'],['Scénographie','dassault'],['Son original','chaff']], projects:['dassault','chaff'] },
+    { id:'da', title:'Direction artistique', short:'Direction artistique', angle:-18, copy:'Donner forme à une intention. Articuler typographie, image et interfaces, puis tenir cette direction jusqu’à la réalisation.', points:[['Webdesign','plouton'],['Présentation','dassault'],['Scénographie','dassault'],['Son original','chaff']], projects:['dassault','chaff'] },
     { id:'numerique', title:'Solutions numériques', short:'Numérique', angle:54, copy:'Passer du besoin à un outil utilisable. Concevoir les parcours, structurer les contenus et réaliser les interfaces qui font fonctionner le service.', points:[['Parcours','musee'],['Sites & CMS','pattern'],['Développement','clear'],['Produit','cooked']], projects:['clear','musee'] },
     { id:'ia', title:'IA & automatisation', short:'IA & automatisation', angle:126, copy:'Utiliser l’IA pour produire, analyser et prototyper. Construire des workflows utiles, avec des étapes de vérification adaptées au contexte.', points:[['Synthèse IA','clear'],['Veille','clear'],['Éditorial IA','pattern'],['Workflows','pattern']], projects:['clear','cooked'] },
     { id:'growth', title:'Growth & mesure', short:'Growth', angle:198, copy:'Relier visibilité, usages et acquisition. Faire évoluer les contenus et les parcours à partir de données que l’on peut interpréter et vérifier.', points:[['SEO','plouton'],['Acquisition','chaff'],['Attribution','cooked'],['Données','cooked']], projects:['cooked','plouton'] }
@@ -617,7 +618,7 @@ window.CV = {
   const skillIndicator = document.createElement('span');
   skillIndicator.className = 'skill-indicator';
   skillIndicator.setAttribute('aria-hidden', 'true');
-  if (skillTabs && !skillTabs.hidden) {
+  if (skillTabs) {
     skillTabs.innerHTML=fields.map(f=>`<button type="button" data-field-tab="${f.id}" aria-pressed="false">${f.short}</button>`).join('');
     skillTabs.appendChild(skillIndicator);
   }
