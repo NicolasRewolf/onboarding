@@ -79,9 +79,9 @@ const inputCls =
 
 function ConfirmInput({ card, value, onChange, onPicked }: Props & { card: Extract<Card, { kind: "confirm" }> }) {
   const opts = [
-    { v: "exact", label: "C'est exact", Icon: Check },
-    { v: "nuance", label: "À nuancer", Icon: PencilLine },
-    { v: "faux", label: "Faux", Icon: X },
+    { v: "exact", label: "C'est ça", Icon: Check },
+    { v: "nuance", label: "Pas tout à fait", Icon: PencilLine },
+    { v: "faux", label: "Non", Icon: X },
   ];
   const pick = (v: string) => {
     onChange({ value: v });
@@ -110,7 +110,7 @@ function ConfirmInput({ card, value, onChange, onPicked }: Props & { card: Extra
           rows={3}
           value={value.note ?? ""}
           onChange={(e) => onChange({ note: e.target.value })}
-          placeholder={value.value === "faux" ? "Ce qui est vrai chez vous…" : "Ce qu'il faudrait dire…"}
+          placeholder={value.value === "faux" ? "Dis-moi comment c'est vraiment…" : "Qu'est-ce que tu changerais ?"}
           className={inputCls}
         />
       )}
@@ -137,7 +137,7 @@ function ChoiceInput({ card, value, onChange, onPicked }: Props & { card: Extrac
           autoFocus
           value={value.other ?? ""}
           onChange={(e) => onChange({ other: e.target.value })}
-          placeholder="Précise…"
+          placeholder="Dis-moi…"
           className={inputCls}
         />
       )}
@@ -193,7 +193,7 @@ function GridInput({ card, value, onChange }: Props & { card: Extract<Card, { ki
           onClick={() => onChange({ rows: Object.fromEntries(card.rows.map((r) => [r.v, first.v])) })}
           className="mb-3 border-2 border-dashed border-rw-black px-3 py-2 text-sm font-semibold hover:border-solid hover:bg-rw-paper-subtle"
         >
-          Tout sur « {first.label} », puis je corrige
+          Tout en « {first.label} », je corrige après
         </button>
       )}
       <div className="divide-y-2 divide-rw-line-subtle border-y-2 border-rw-line-subtle">
@@ -334,7 +334,7 @@ function LongInput({ card, value, onChange }: Props & { card: Extract<Card, { ki
       />
       <p className="flex items-center gap-2 text-sm text-rw-muted">
         <Mic className="size-4 shrink-0" aria-hidden />
-        Sur téléphone, le micro du clavier permet de dicter : c'est plus rapide.
+        Sur ton téléphone, le micro du clavier te permet de dicter : c'est bien plus rapide.
       </p>
     </div>
   );

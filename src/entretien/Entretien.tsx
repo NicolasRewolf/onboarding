@@ -310,10 +310,10 @@ function Intro({ entry, onStart }: { entry: ResolvedEntretien; onStart: () => vo
   const { content } = entry;
   const firsts = content.chapters.filter((c) => c.first);
   const points = [
-    `Une question par écran, la plupart en un geste. ${content.chapters.length} petits chapitres, une demi-heure en tout, à faire en plusieurs fois.`,
-    `Les ${firsts.length} premiers chapitres sont ceux dont le site a besoin d'abord : environ ${firsts.reduce((s, c) => s + c.minutes, 0)} minutes.`,
-    "Une question qui demande de chercher ? « Je passe » : on la verra ensemble au téléphone.",
-    "Tes réponses partent chez Nicolas à la fin de chaque chapitre, et restent gardées sur cet appareil si tu t'arrêtes en route.",
+    `${content.chapters.length} petits chapitres, une demi-heure en tout. Pas besoin de tout faire d'un coup.`,
+    `Commence par les ${firsts.length} premiers : c'est ce qui me manque le plus, une dizaine de minutes.`,
+    "Tu sèches sur une question ? « Je passe », on en parlera au téléphone.",
+    "Si tu t'arrêtes, rien n'est perdu : tu reprends plus tard sur le même téléphone (ou le même ordi). Et je reçois tes réponses au fur et à mesure.",
   ];
   return (
     <Page className="flex flex-col justify-center">
@@ -328,7 +328,7 @@ function Intro({ entry, onStart }: { entry: ResolvedEntretien; onStart: () => vo
         ))}
       </ul>
       <p className="mt-6 text-sm text-rw-muted">
-        Les phrases « sur le site » sont des propositions : on les ajuste ensemble avant qu'elles soient en ligne.
+        Les phrases « sur le site », c'est moi qui les propose : on les retouchera ensemble.
       </p>
       <div className="mt-10">
         <Button variant="rw" size="lg" onClick={onStart}>
@@ -361,7 +361,7 @@ function ChapterMap({
     <Page>
       <p className="rw-eyebrow text-rw-muted">Sommaire</p>
       <h1 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">
-        {content.client.person}, ton entretien
+        Où tu en es
       </h1>
       <div className="mt-6 flex items-center gap-3">
         <ProgressBar value={t.answered + t.skipped} total={t.total} className="flex-1" />
@@ -419,9 +419,9 @@ function ChapterMap({
 
       <div className="mt-10 border-t-2 border-rw-black pt-6">
         <Button variant="rwDark" size="lg" onClick={onFinish} className="w-full sm:w-auto">
-          {draft.finalAt ? "Renvoyer à Nicolas" : "J'ai fini : prévenir Nicolas"} <Send />
+          {draft.finalAt ? "Je te renvoie tout" : "J'ai fini, je t'envoie tout"} <Send />
         </Button>
-        <p className="mt-3 text-sm text-rw-muted">Même si tout n'est pas rempli : le reste, on le voit au téléphone.</p>
+        <p className="mt-3 text-sm text-rw-muted">Même si t'as pas tout rempli : le reste, on en parle au téléphone.</p>
       </div>
     </Page>
   );
@@ -431,14 +431,14 @@ function SaveLine({ draft, sendState }: { draft: Draft; sendState: SendState }) 
   if (sendState === "sending")
     return (
       <p className="mt-3 inline-flex items-center gap-2 text-sm text-rw-muted">
-        <Loader2 className="size-4 animate-spin" /> Envoi à Nicolas…
+        <Loader2 className="size-4 animate-spin" /> Envoi en cours…
       </p>
     );
   return (
     <p className="mt-3 text-sm text-rw-muted">
       {draft.sentAt
-        ? `Dernier envoi à Nicolas : ${hourFr(draft.sentAt)} (${draft.sentAnswered} réponses).`
-        : "Rien d'envoyé pour l'instant : l'envoi se fait tout seul à la fin de chaque chapitre."}
+        ? `Bien reçu de mon côté : ${draft.sentAnswered} réponses, le ${hourFr(draft.sentAt)}.`
+        : "Rien d'envoyé pour l'instant : ça part tout seul à la fin de chaque chapitre."}
     </p>
   );
 }
@@ -546,7 +546,7 @@ function CardScreen({
         {withNote &&
           (noteOpen || x.note ? (
             <label className="mt-6 block">
-              <span className="mb-1.5 block text-sm font-semibold">{card.notePh ?? "Une précision"}</span>
+              <span className="mb-1.5 block text-sm font-semibold">{card.notePh ?? "Un mot de plus"}</span>
               <textarea
                 autoFocus={!x.note}
                 rows={2}
@@ -561,7 +561,7 @@ function CardScreen({
               onClick={() => setNoteOpen(true)}
               className="mt-6 text-sm font-semibold text-rw-muted underline underline-offset-4 hover:text-rw-black"
             >
-              + {card.notePh ?? "Ajouter une précision"}
+              + {card.notePh ?? "Un mot de plus ?"}
             </button>
           ))}
       </Page>
@@ -631,12 +631,12 @@ function ChapterDone({
       <h1 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">{chapter.title}</h1>
       <p className="mt-2 text-rw-muted">
         {p.answered} réponse{p.answered > 1 ? "s" : ""}
-        {p.skipped ? ` · ${p.skipped} passée${p.skipped > 1 ? "s" : ""}, pour le téléphone` : ""}
+        {p.skipped ? ` · ${p.skipped} passée${p.skipped > 1 ? "s" : ""}, on en parlera au téléphone` : ""}
       </p>
 
       {phrases.length > 0 && (
         <section className="mt-8">
-          <h2 className="rw-eyebrow">Ce que tes réponses donnent sur le site</h2>
+          <h2 className="rw-eyebrow">Ce que ça donne sur le site</h2>
           <ul className="mt-3 space-y-2">
             {phrases.map((s) => (
               <li key={s} className="border-l-4 border-rw-orange bg-rw-paper-subtle px-4 py-3 font-semibold leading-snug">
@@ -650,20 +650,20 @@ function ChapterDone({
       <div className="mt-8 text-sm">
         {sendState === "sending" && (
           <p className="inline-flex items-center gap-2 text-rw-muted">
-            <Loader2 className="size-4 animate-spin" /> Envoi à Nicolas…
+            <Loader2 className="size-4 animate-spin" /> Envoi en cours…
           </p>
         )}
         {sendState === "ok" && (
           <p className="inline-flex items-center gap-2 font-semibold text-rw-success">
-            <CircleCheck className="size-4" /> Envoyé à Nicolas.
+            <CircleCheck className="size-4" /> Bien reçu de mon côté, merci !
           </p>
         )}
         {sendState === "error" && (
           <div className="border-2 border-rw-danger p-3">
-            <p className="font-semibold text-rw-danger">L'envoi à Nicolas n'est pas passé.</p>
-            <p className="mt-1 text-rw-muted">Tes réponses restent gardées sur cet appareil. Il repartira à la fin du prochain chapitre.</p>
+            <p className="font-semibold text-rw-danger">L'envoi n'a pas marché.</p>
+            <p className="mt-1 text-rw-muted">Pas grave : tout est gardé ici, ça repartira à la fin du prochain chapitre.</p>
             <button type="button" onClick={onRetry} className="mt-2 font-semibold underline underline-offset-4">
-              Réessayer maintenant
+              Réessayer
             </button>
           </div>
         )}
@@ -676,7 +676,7 @@ function ChapterDone({
           </Button>
         ) : (
           <Button variant="rw" size="lg" onClick={onEnd}>
-            Tout est vu : terminer <ArrowRight />
+            J'ai tout vu, on termine <ArrowRight />
           </Button>
         )}
         <Button variant="rwOutline" size="lg" onClick={onMap}>
@@ -716,7 +716,7 @@ function EndScreen({
   return (
     <Page>
       <p className="rw-eyebrow text-rw-muted">Dernière étape</p>
-      <h1 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">On envoie tout à Nicolas ?</h1>
+      <h1 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">On envoie ?</h1>
 
       <dl className="mt-8 grid grid-cols-3 border-2 border-rw-black">
         {[
@@ -733,7 +733,7 @@ function EndScreen({
 
       {skipped.length > 0 && (
         <section className="mt-8">
-          <h2 className="rw-eyebrow">Pour le téléphone</h2>
+          <h2 className="rw-eyebrow">À voir au téléphone</h2>
           <ul className="mt-3 divide-y-2 divide-rw-line-subtle border-y-2 border-rw-line-subtle">
             {skipped.map(({ c, i, k }) => (
               <li key={c.id}>
@@ -761,26 +761,26 @@ function EndScreen({
       )}
 
       <label className="mt-8 block">
-        <span className="mb-1.5 block font-semibold">Un mot pour Nicolas ? (facultatif)</span>
+        <span className="mb-1.5 block font-semibold">Un petit mot ? (si tu veux)</span>
         <textarea
           rows={4}
           value={draft.message}
           onChange={(e) => onMessage(e.target.value)}
-          placeholder="Un créneau pour s'appeler, une remarque, ce qui t'a fait tiquer…"
+          placeholder="Un créneau pour s'appeler, un truc qui t'a fait tiquer…"
           className="w-full border-2 border-rw-black bg-rw-white px-3 py-3 text-base outline-none focus-visible:shadow-[var(--shadow-hard-orange)]"
         />
       </label>
 
       {sendState === "error" && (
         <p className="mt-4 border-2 border-rw-danger p-3 text-sm">
-          <span className="font-semibold text-rw-danger">L'envoi à Nicolas n'est pas passé.</span>{" "}
-          Tes réponses restent gardées ici : réessaie dans un moment.
+          <span className="font-semibold text-rw-danger">L'envoi n'a pas marché.</span>{" "}
+          Pas grave, tout est gardé ici : réessaie dans un moment.
         </p>
       )}
 
       <div className="mt-8">
         <Button variant="rw" size="lg" onClick={onSend} disabled={sendState === "sending"} className="w-full sm:w-auto">
-          {sendState === "sending" ? <Loader2 className="animate-spin" /> : <Send />} Envoyer à Nicolas
+          {sendState === "sending" ? <Loader2 className="animate-spin" /> : <Send />} Envoyer
         </Button>
       </div>
     </Page>
@@ -793,13 +793,13 @@ function Sent({ person, answered, skipped, onMap }: { person: string; answered: 
       <div className="grid size-16 place-items-center border-2 border-rw-black bg-rw-orange shadow-[var(--shadow-hard)]">
         <Check className="size-8" strokeWidth={3} />
       </div>
-      <h1 className="mt-6 text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">C'est envoyé, merci {person}.</h1>
+      <h1 className="mt-6 text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">Merci {person}, j'ai tout reçu !</h1>
       <p className="mt-4 max-w-xl text-lg leading-relaxed text-rw-muted">
-        Nicolas a reçu tes {answered} réponses.
-        {skipped > 0 ? ` Les ${skipped} questions passées, vous les verrez ensemble au téléphone.` : ""}
+        Tes {answered} réponses sont bien arrivées.
+        {skipped > 0 ? ` Les ${skipped} que t'as passées, on se les fait au téléphone.` : ""}
       </p>
       <p className="mt-3 max-w-xl text-[15px] text-rw-muted">
-        Tu peux revenir corriger quand tu veux, sur ce même appareil : il suffira de renvoyer.
+        Si tu veux changer un truc, reviens sur le même téléphone (ou le même ordi) et renvoie, c'est tout.
       </p>
       <div className="mt-10">
         <Button variant="rwOutline" size="lg" onClick={onMap}>

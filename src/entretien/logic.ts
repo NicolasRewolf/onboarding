@@ -86,7 +86,7 @@ export const chapterDone = (ch: Chapter, a: Answers) => visibleCards(ch, a).ever
 /* ─────────────── Mise en forme (rapport) ─────────────── */
 
 const lab = (opts: Option[], v?: string) => opts.find((o) => o.v === v)?.label ?? v ?? "";
-const CONFIRM: Record<string, string> = { exact: "✅ C'est exact", nuance: "🟠 À nuancer", faux: "❌ Faux" };
+const CONFIRM: Record<string, string> = { exact: "✅ C'est ça", nuance: "🟠 Pas tout à fait", faux: "❌ Non" };
 
 /** Réponse lisible, sur une ou plusieurs lignes (Markdown). Vide si rien. */
 export function formatAnswer(card: Card, x?: CardAnswer): string {
