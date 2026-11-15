@@ -11,6 +11,7 @@ import Avocats from "./avocats/Avocats";
 import SiteInternet from "./avocats/SiteInternet";
 import Referencement from "./avocats/Referencement";
 import Cremaillere from "./cremaillere/Cremaillere";
+import Entretien from "./entretien/Entretien";
 import { Confidentialite, MentionsLegales } from "./legal/Legal";
 import ConsentBanner from "./consent/ConsentBanner";
 
@@ -29,6 +30,7 @@ export default function App() {
         <Route path="/avocats/site-internet" element={<SiteInternet />} />
         <Route path="/avocats/referencement" element={<Referencement />} />
         <Route path="/cremaillere" element={<Cremaillere />} />
+        <Route path="/entretien/:slug" element={<Entretien />} />
         <Route path="/mentions-legales" element={<MentionsLegales />} />
         <Route path="/confidentialite" element={<Confidentialite />} />
         <Route path="*" element={<Navigate to="/" replace />} />

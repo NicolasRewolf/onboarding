@@ -17,6 +17,7 @@ Disallow: /reels/
 Disallow: /articles/
 Disallow: /forfaits-flash
 Disallow: /cremaillere
+Disallow: /entretien/
 
 # AdsBot n'obéit pas aux règles génériques : il lui faut une section explicite.
 # Sans elle, l'évaluation des pages de destination des annonces peut être gênée.
