@@ -2,30 +2,37 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { z } from "zod";
 
 /**
- * Reçoit les réponses d'un entretien (ex. Pierre Henry depuis /entretien/albret) et :
+ * Reçoit les réponses d'un entretien (ex. /entretien/albret) et :
  *   1. écrit `reponses.md` (rapport lisible) et `reponses.json` (données) dans le
  *      dépôt privé des réponses, en écrasant la version précédente : un envoi à la
  *      fin de chaque chapitre, l'historique des commits garde chaque étape ;
- *   2. à l'envoi final seulement, ouvre une issue de notification (ou la commente
- *      si elle existe déjà) : un seul signal pour Nicolas, pas un par chapitre.
+ *   2. prévient par e-mail, une fois par séance : au premier chapitre envoyé, quand
+ *      la personne reprend après au moins deux heures sans e-mail, et toujours à
+ *      l'envoi final. Le rapport complet est recopié dans l'e-mail.
  *
  * Fonction autonome : aucun import hors de /api (cf. invariant CLAUDE.md).
- * Slugs `test-…` / `demo-…` : dossier `_tests`, aucune notification.
+ * Slugs `test-…` / `demo-…` : dossier `_tests`, e-mail marqué « [Essai] ».
  *
- * Variables d'environnement (les mêmes que submit.ts) :
- *   GITHUB_TOKEN         — PAT fine-grained, Contents + Issues (RW) sur le dépôt réponses
- *   RESPONSES_REPO       — "owner/repo"  (défaut : NicolasRewolf/onboarding-responses)
- *   RESPONSES_BRANCH     — branche       (défaut : main)
- *   NOTIFY_GITHUB_HANDLE — handle à notifier (défaut : NicolasRewolf)
+ * Variables d'environnement :
+ *   GITHUB_TOKEN        — PAT fine-grained, Contents (RW) sur le dépôt réponses
+ *   RESPONSES_REPO      — "owner/repo"  (défaut : NicolasRewolf/onboarding-responses)
+ *   RESPONSES_BRANCH    — branche       (défaut : main)
+ *   RESEND_API_KEY      — clé Resend
+ *   LEAD_FROM_EMAIL     — expéditeur, le même que les autres supports
+ *   ENTRETIEN_TO_EMAIL  — destinataire des e-mails
+ * Sans RESEND_API_KEY ou ENTRETIEN_TO_EMAIL, aucun e-mail ; les réponses sont quand même enregistrées.
  */
 
 const REPO = process.env.RESPONSES_REPO || "NicolasRewolf/onboarding-responses";
 const BRANCH = process.env.RESPONSES_BRANCH || "main";
-const NOTIFY = process.env.NOTIFY_GITHUB_HANDLE || "NicolasRewolf";
+const MAIL_FROM = process.env.LEAD_FROM_EMAIL || "REWOLF <onboarding@resend.dev>";
 const API = "https://api.github.com";
 
-/** Entretiens existants (dupliqué de src/entretien/logic.ts : pas d'import hors /api). */
-const KNOWN = ["albret"];
+/** Sans e-mail depuis ce délai, un nouvel envoi d'étape compte comme une nouvelle séance. */
+const SEANCE_MS = 2 * 60 * 60 * 1000;
+
+/** Entretiens existants → prénom de la personne (dupliqué de src/entretien : pas d'import hors /api). */
+const KNOWN = new Map([["albret", "Pierre"]]);
 
 const PayloadSchema = z.object({
   slug: z.string().trim().min(1).max(64),
@@ -53,6 +60,47 @@ function gh(token: string) {
 
 const b64utf8 = (s: string) => Buffer.from(s, "utf-8").toString("base64");
 const safeSlug = (s: string) => String(s || "").toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 64);
+const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+const plural = (n: number, word: string) => `${n} ${word}${n > 1 ? "s" : ""}`;
+
+/** Envoie l'e-mail de suivi. Ne lève jamais : renvoie false si rien n'est parti. */
+async function sendMail(subject: string, line: string, reportUrl: string, report: string): Promise<boolean> {
+  const key = process.env.RESEND_API_KEY;
+  const to = process.env.ENTRETIEN_TO_EMAIL;
+  if (!key || !to) {
+    console.warn("[entretien] RESEND_API_KEY ou ENTRETIEN_TO_EMAIL absente — aucun e-mail envoyé");
+    return false;
+  }
+  try {
+    const r = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: MAIL_FROM,
+        to: [to],
+        subject,
+        text: `${line}\n\nSes réponses à jour : ${reportUrl}\n\n———\n\n${report}`,
+        html:
+          `<div style="font-family:system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.5;color:#111">` +
+          `<p style="margin:0 0 12px">${esc(line)}</p>` +
+          `<p style="margin:0 0 20px"><a href="${esc(reportUrl)}">Lire ses réponses à jour</a></p>` +
+          `<pre style="white-space:pre-wrap;font-family:ui-monospace,Menlo,monospace;font-size:13px;background:#f6f5f2;padding:16px;border-radius:6px">${esc(report)}</pre>` +
+          `</div>`,
+      }),
+    });
+    // `fetch` ne lève pas sur un statut d'erreur : sans ce test, un refus de Resend ne laisse aucune trace.
+    if (!r.ok) {
+      const detail = await r.text().catch(() => "");
+      console.error(`[entretien] Resend a refusé l'envoi — HTTP ${r.status} : ${detail.slice(0, 500)}`);
+      return false;
+    }
+    console.log(`[entretien] e-mail envoyé : ${subject}`);
+    return true;
+  } catch (e) {
+    console.error("[entretien] Resend injoignable :", e instanceof Error ? e.message : e);
+    return false;
+  }
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") {
@@ -69,13 +117,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!parsed.success) {
       return res.status(400).json({ error: "Réponses invalides.", details: parsed.error.issues.slice(0, 3) });
     }
-    const { client, final, stats, reportMarkdown, data } = parsed.data;
+    const { final, stats, reportMarkdown, data } = parsed.data;
 
     // Le slug décide du dossier : seulement un entretien connu, ou son essai.
     const slug = safeSlug(parsed.data.slug);
     const m = slug.match(/^(?:test|demo)-(.+)$/);
     const isTest = !!m;
-    if (!KNOWN.includes(m ? m[1] : slug)) return res.status(404).json({ error: "Entretien inconnu." });
+    const person = KNOWN.get(m ? m[1] : slug);
+    if (!person) return res.status(404).json({ error: "Entretien inconnu." });
 
     const json = JSON.stringify(data, null, 2);
     if (json.length > 600_000) return res.status(413).json({ error: "Réponses trop volumineuses." });
@@ -83,7 +132,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const dir = isTest ? `entretiens/_tests/${slug}` : `entretiens/${slug}`;
     const when = new Date().toISOString(); // horloge serveur uniquement
     const api = gh(token);
-    const [owner, repo] = REPO.split("/");
 
     async function getFile(path: string): Promise<{ sha?: string; text?: string }> {
       const r = await api(`/repos/${REPO}/contents/${encodeURIComponent(path)}?ref=${BRANCH}`);
@@ -107,49 +155,41 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
-    // N° d'issue d'un envoi final précédent (gardé dans le JSON).
-    let issueNumber: number | undefined;
+    // Date du dernier e-mail de suivi (gardée dans le JSON).
+    let notifiedAt: string | undefined;
     try {
-      const prior = JSON.parse((await getFile(`${dir}/reponses.json`)).text || "{}") as { issueNumber?: unknown };
-      if (typeof prior.issueNumber === "number") issueNumber = prior.issueNumber;
+      const prior = JSON.parse((await getFile(`${dir}/reponses.json`)).text || "{}") as { notifiedAt?: unknown };
+      if (typeof prior.notifiedAt === "string") notifiedAt = prior.notifiedAt;
     } catch {
-      /* pas de JSON précédent lisible : pas d'issue à reprendre */
+      /* pas de JSON précédent lisible : aucun e-mail encore envoyé */
     }
 
-    const progress = `${stats?.answered ?? "?"}/${stats?.total ?? "?"}`;
+    const answered = stats?.answered ?? 0;
+    const total = stats?.total ?? 0;
+    const skipped = stats?.skipped ?? 0;
+    const progress = `${answered}/${total}`;
     const label = final ? "envoi final" : "étape";
     await putFile(`${dir}/reponses.md`, reportMarkdown, `Entretien ${slug} — ${label} (${progress})`);
 
-    const repoUrl = `https://github.com/${owner}/${repo}`;
-    const reportUrl = `${repoUrl}/blob/${BRANCH}/${dir}/reponses.md`;
+    const reportUrl = `https://github.com/${REPO}/blob/${BRANCH}/${dir}/reponses.md`;
 
-    if (final && !isTest) {
-      try {
-        const line = `**${client.name}** — ${progress} réponses, ${stats?.skipped ?? 0} passée(s). [Lire les réponses](${reportUrl})`;
-        if (issueNumber) {
-          await api(`/repos/${REPO}/issues/${issueNumber}/comments`, {
-            method: "POST",
-            body: JSON.stringify({ body: `@${NOTIFY} 🔁 Nouvel envoi final de l'entretien : ${line}` }),
-          });
-        } else {
-          const r = await api(`/repos/${REPO}/issues`, {
-            method: "POST",
-            body: JSON.stringify({
-              title: `Entretien — ${client.name}`,
-              assignees: [NOTIFY],
-              body: `@${NOTIFY} — l'entretien est rempli : ${line}`,
-            }),
-          });
-          if (r.ok) issueNumber = ((await r.json()) as { number?: number }).number;
-        }
-      } catch {
-        /* la notification est un bonus : les réponses sont déjà enregistrées */
-      }
+    // Un e-mail par séance, et toujours à l'envoi final.
+    if (final || !notifiedAt || Date.now() - Date.parse(notifiedAt) >= SEANCE_MS) {
+      const [subject, line] = final
+        ? [
+            `${person} a tout envoyé (${progress})`,
+            `${person} a appuyé sur « J'ai fini » : ${plural(answered, "réponse")} sur ${total}` +
+              (skipped ? `, ${plural(skipped, "question")} passée${skipped > 1 ? "s" : ""}, à voir au téléphone.` : "."),
+          ]
+        : notifiedAt
+          ? [`${person} a repris le questionnaire (${progress})`, `${person} a repris ses réponses : ${answered} sur ${total} pour l'instant.`]
+          : [`${person} a commencé le questionnaire (${progress})`, `${person} a commencé à répondre : ${answered} sur ${total} pour l'instant.`];
+      if (await sendMail(`${isTest ? "[Essai] " : ""}${subject}`, line, reportUrl, reportMarkdown)) notifiedAt = when;
     }
 
     await putFile(
       `${dir}/reponses.json`,
-      JSON.stringify({ ...data, receivedAt: when, issueNumber: issueNumber ?? null }, null, 2),
+      JSON.stringify({ ...data, receivedAt: when, notifiedAt: notifiedAt ?? null }, null, 2),
       `Entretien ${slug} (données) — ${label} (${progress})`,
     );
 
